@@ -61,6 +61,10 @@ class SimpleButton(Gtk.EventBox):
     def get_active_state(self):
         return self.active_state
 
+    def set_label(self, text):
+        self.label = text
+        self.queue_draw()
+
     def on_draw(self, area, cr):
         w = area.get_allocated_width()
         h = area.get_allocated_height()
@@ -100,11 +104,31 @@ class SimpleButton(Gtk.EventBox):
         cr.set_source_rgb(0.21, 0.2, 0.17)
         if self.type is ButtonType.TEXT_LABEL:
             # Label
+            lines = self.label.split('\n')
+
             cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
             cr.set_font_size(16)
-            txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
-            cr.move_to(w / 2.0 - txt_w / 2.0, h / 2.0 + txt_h / 2.0)
-            cr.show_text(self.label)
+
+
+            #txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
+            _, _, _, line_h, _, _ = cr.text_extents("X")
+            line_spacing = 20  # Pixels of padding between lines
+            total_h = (line_h * len(lines)) + (line_spacing * (len(lines) - 1))
+            start_y = (h / 2.0) - (total_h / 2.0) + line_h
+
+            for i, line in enumerate(lines):
+                # Calculate unique X for each line so they are individually centered horizontally
+                _, _, txt_w, _, _, _ = cr.text_extents(line)
+                x = (w / 2.0) - (txt_w / 2.0)
+
+                # Push Y down for every subsequent line
+                y = start_y + (i * (line_h + line_spacing))
+
+                cr.move_to(x, y)
+                cr.show_text(line)
+
+            #cr.move_to(w / 2.0 - txt_w / 2.0, h / 2.0 + txt_h / 2.0)
+            #cr.show_text(self.label)
 
         elif self.type is ButtonType.PHASE_SYMBOL:
             cr.set_line_width(4)

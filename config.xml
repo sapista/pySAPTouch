@@ -18,7 +18,7 @@
         <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
     <debug>
-        <log_invalid_messages>False</log_invalid_messages>
+        <log_invalid_messages>True</log_invalid_messages>
     </debug>
 </config>
 

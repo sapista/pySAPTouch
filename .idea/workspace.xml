@@ -1,10 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="added the encoder">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="fix trim fader position on edit mode">
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/sapista.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/sapista.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/pySAPTouch.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pySAPTouch.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LEDWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/LEDWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO" beforeDir="false" afterPath="$PROJECT_DIR$/TODO" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/automationTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/automationTypes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bankAvrController.py" beforeDir="false" afterPath="$PROJECT_DIR$/bankAvrController.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/config.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customframewidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/customframewidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/SAPAudio_Logo.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/SAPAudio_Logo.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/audition_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/audition_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/bank_spacer.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/bank_spacer.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/bank_spacer.xcf" beforeDir="false" afterPath="$PROJECT_DIR$/icons/bank_spacer.xcf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/close.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/close.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/close_small.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close_small.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/contenttool_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/contenttool_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/cut_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/cut_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/draw_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/draw_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/loop.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loop.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/loopGreen.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loopGreen.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/loopWhite.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loopWhite.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/metronome.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/metronome.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/next.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/next.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/next.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/next.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/object_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/object_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/play_pauseGreen.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pauseGreen.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/play_pauseWhite.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pauseWhite.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/play_pause_icon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pause_icon.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/prev.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/prev.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/range_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/range_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/reload_32.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/reload_32.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/sapaudio_logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/sapaudio_logo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/save_icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/save_icon.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/save_icon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/save_icon.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/icons/timefx_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/timefx_mode.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/miniMeter.py" beforeDir="false" afterPath="$PROJECT_DIR$/miniMeter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pannerWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/pannerWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyFaderSerialCOM.py" beforeDir="false" afterPath="$PROJECT_DIR$/pyFaderSerialCOM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saptouch_theme.css" beforeDir="false" afterPath="$PROJECT_DIR$/saptouch_theme.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simplebuttonwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/simplebuttonwidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTypes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,16 +70,38 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "sapista"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/sapista/pySAPTouch.git",
+    "accountId": "0fb26002-a7c0-4b87-8ce6-e2de79a7ebb3"
+  }
+}]]></component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="1cRIN5J79kWZlvpH6otwMXkQ9BQ" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="com.intellij.ide.scratch.LRUPopupBuilder$2/Languages" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.general" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.maingui.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -39,6 +110,7 @@
   <component name="RunManager">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="pySAPTouch" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -49,6 +121,8 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -60,16 +134,20 @@
     </configuration>
     <configuration name="maingui" type="PythonConfigurationType" factoryName="Python">
       <module name="pySAPTouch" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/maingui.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -81,6 +159,7 @@
     </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
       <module name="pySAPTouch" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -88,12 +167,15 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <option name="RUN_TOOL" value="" />
       <option name="_new_additionalArguments" value="&quot;&quot;" />
       <option name="_new_target" value="&quot;.&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -189,8 +271,26 @@
       <option name="project" value="LOCAL" />
       <updated>1592842080268</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="fix trim fader position on edit mode">
+      <created>1597075612246</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1597075612246</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="added xml to config ports and ip" />
@@ -205,81 +305,8 @@
     <MESSAGE value="Sends implementation complete" />
     <MESSAGE value="headerbar completed" />
     <MESSAGE value="added the encoder" />
-    <option name="LAST_COMMIT_MESSAGE" value="added the encoder" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="2339" y="183" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1590670570916">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2339" y="183" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590670570916" />
-    <state x="2598" y="329" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1592064419579">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2598" y="329" key="#com.intellij.fileTypes.FileTypeChooser/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592064419579" />
-    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2" timestamp="1592842080182">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2502" y="78" width="1177" height="907" key="CommitChangelistDialog2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592842080182" />
-    <state width="430" height="485" key="DebuggerActiveHint" timestamp="1591810955349">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="430" height="485" key="DebuggerActiveHint/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591810955349" />
-    <state x="2663" y="283" key="FileChooserDialogImpl" timestamp="1590669205604">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2663" y="283" key="FileChooserDialogImpl/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590669205604" />
-    <state width="1897" height="213" key="GridCell.Tab.0.bottom" timestamp="1597073814214">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="213" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1597073814214" />
-    <state width="1897" height="213" key="GridCell.Tab.0.center" timestamp="1597073814214">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="213" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1597073814214" />
-    <state width="1897" height="213" key="GridCell.Tab.0.left" timestamp="1597073814214">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="213" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1597073814214" />
-    <state width="1897" height="213" key="GridCell.Tab.0.right" timestamp="1597073814214">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="213" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1597073814214" />
-    <state width="1897" height="207" key="GridCell.Tab.1.bottom" timestamp="1593414070370">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.bottom/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1593414070370" />
-    <state width="1897" height="207" key="GridCell.Tab.1.center" timestamp="1593414070370">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.center/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1593414070370" />
-    <state width="1897" height="207" key="GridCell.Tab.1.left" timestamp="1593414070370">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.left/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1593414070370" />
-    <state width="1897" height="207" key="GridCell.Tab.1.right" timestamp="1593414070370">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state width="1897" height="207" key="GridCell.Tab.1.right/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1593414070370" />
-    <state x="2385" y="160" key="SettingsEditor" timestamp="1590732749162">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2385" y="160" key="SettingsEditor/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590732749162" />
-    <state x="2476" y="261" key="Vcs.Push.Dialog.v2" timestamp="1592842082704">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2476" y="261" key="Vcs.Push.Dialog.v2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592842082704" />
-    <state x="2531" y="143" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1592119497347">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2531" y="143" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1592119497347" />
-    <state x="2445" y="248" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1590908377366">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2445" y="248" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1590908377366" />
-    <state x="2543" y="232" width="672" height="678" key="search.everywhere.popup" timestamp="1591285340429">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="2543" y="232" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1080/0.0.1920.1052@1920.0.1920.1080" timestamp="1591285340429" />
+    <MESSAGE value="fix trim fader position on edit mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix trim fader position on edit mode" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

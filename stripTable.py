@@ -37,7 +37,7 @@ class StripTable(Gtk.ScrolledWindow):
                                  (int,))
     }
 
-    def __init__(self, bank_size, meter_pixels_x_seconds = None, is_send = False):
+    def __init__(self, bank_size, meter_pixels_x_seconds = None, is_send = False, is_vca = False):
         super(StripTable, self).__init__()
 
         self.strips_list_widgets = [] #Stores the list of select widgets
@@ -47,6 +47,7 @@ class StripTable(Gtk.ScrolledWindow):
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
         self.send_mode = is_send
+        self.vca_mode = is_vca
 
         self.table = Gtk.Label(label="Strip list is empty, click the refresh button to start DAW comunication")
         self.viewport_table = Gtk.Viewport()
@@ -67,6 +68,8 @@ class StripTable(Gtk.ScrolledWindow):
         return self.current_selected_strip_widget
 
     def get_current_selected_strip_ssid(self):
+        if self.current_selected_strip_widget is None:
+            return None
         return self.strips_list_widgets[self.current_selected_strip_widget].get_ssid()
 
     def get_strip_ssid(self, index):
@@ -106,13 +109,14 @@ class StripTable(Gtk.ScrolledWindow):
 
 
     def clear_strips(self):
+        #if self.get_number_of_strips() > 0:
         self.strips_list_widgets = []  # Clear the list
         self.strips_ssid_id_dict = dict()  # Clear the id ssid dictionary
         self.bank_strip_id_list = [] #Clear the bank id list
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
-        #if self.viewport_table.get_child() is not None: #TODO remove me!
-        self.viewport_table.remove(self.table)
+        if self.viewport_table.get_child() is not None:
+            self.viewport_table.remove(self.table)
 
     def fill_strips(self):
         self.table = Gtk.Grid()
@@ -134,7 +138,7 @@ class StripTable(Gtk.ScrolledWindow):
                 self.table.attach(Gtk.Label(), i, 0, 1, 1)
 
         if len(self.strips_list_widgets) > 0:
-            self.strip_select(self.strips_list_widgets[0].get_ssid(), True)
+            #self.strip_select(self.strips_list_widgets[0].get_ssid(), True) #TODO comment! aja
             self.table.show_all()
             self.table.show()
         else:
@@ -151,7 +155,7 @@ class StripTable(Gtk.ScrolledWindow):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
             self.strips_list_widgets[idx].set_fader(value)  # Store fader, used in send mode
-            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
+            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank(): #TODO is this working?
                 self.emit('bank_channel_fader_changed', self.strips_list_widgets[idx].get_bank_index(), value)
 
     def set_fader_gain(self, ssid, value):
@@ -202,11 +206,11 @@ class StripTable(Gtk.ScrolledWindow):
             idx = self.strips_ssid_id_dict[ssid]
 
             if not self.send_mode:
-                self.strips_list_widgets[idx].set_selected(value)
+                self.strips_list_widgets[idx].set_selected(value) #TODO VCA cannot be selected, think about this
 
             # Check if bank has changed
             if value:  # Do not refresh the bank if selection is false
-                if self.current_selected_bank != self.strips_list_widgets[idx].get_bank(): #Only if bank changed
+                if self.current_selected_bank != self.strips_list_widgets[idx].get_bank(): #Only if bank changed #TODO when switching from VCA/tracks consider forcing this to happen! maybe set it to none?
 
                     #Change previous selected bank state
                     if self.current_selected_bank is not None:
@@ -214,7 +218,7 @@ class StripTable(Gtk.ScrolledWindow):
                             if i is not None:
                                 self.strips_list_widgets[i].set_bank_selected(False)
                                 if self.send_mode:
-                                    self.strips_list_widgets[i].set_selected(False)
+                                    self.strips_list_widgets[i].set_selected(False) #TODO consider the same for VCA
 
                     self.current_selected_bank = self.strips_list_widgets[idx].get_bank()
 
@@ -228,7 +232,7 @@ class StripTable(Gtk.ScrolledWindow):
 
                             self.strips_list_widgets[strip_index].set_bank_selected(True)
                             if self.send_mode:
-                                self.strips_list_widgets[strip_index].set_selected(True)
+                                self.strips_list_widgets[strip_index].set_selected(True) #TODO consider the same for VCA!
 
                             self.emit('bank_channel_ssid_name_changed',
                                       i,
@@ -256,17 +260,16 @@ class StripTable(Gtk.ScrolledWindow):
                                               i,
                                               self.strips_list_widgets[strip_index].get_rec())
 
-                            elif self.strips_list_widgets[strip_index].get_fader() is not None:
-                                #In send mode we need to send fader values
-                                self.emit('bank_channel_fader_changed',
-                                          i,
-                                          self.strips_list_widgets[strip_index].get_fader())
+                            if self.send_mode or self.vca_mode:
+                                if self.strips_list_widgets[strip_index].get_fader() is not None:
+                                    #In send and VCA modes we need to send fader values
+                                    self.emit('bank_channel_fader_changed',
+                                              i,
+                                              self.strips_list_widgets[strip_index].get_fader())
 
-                                self.emit('bank_channel_fader_gain_changed',
-                                          i,
-                                          self.strips_list_widgets[strip_index].get_fader_gain())
-
-
+                                    self.emit('bank_channel_fader_gain_changed',
+                                              i,
+                                              self.strips_list_widgets[strip_index].get_fader_gain())
 
                         else:
                             self.emit('bank_channel_type_changed', i, 0)
@@ -282,9 +285,15 @@ class StripTable(Gtk.ScrolledWindow):
 
     def on_strip_selected(self, widget, issid):
         self.emit('strip_select_changed', issid)
-        self.strip_select(issid, True) #TODO if there is no ardour feedback I will need this, check it
+        #self.strip_select(issid, True) #TODO if there is no ardour feedback I will need this, check it, DELETE me!
 
     def on_meter_refresh_timeout(self):
         for stripCtl in self.strips_list_widgets:
             stripCtl.refresh_meter()
         GLib.timeout_add(self.timeout_meter_interval, self.on_meter_refresh_timeout)
+
+    def check_if_ssid_exists(self, issid):
+        return  issid in self.strips_ssid_id_dict
+
+    def reset_current_selected_bank(self):
+        self.current_selected_bank = None

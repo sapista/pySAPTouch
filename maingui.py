@@ -2,6 +2,8 @@
 
 import gi
 
+from stripTypes import StripEnum
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 
@@ -28,7 +30,7 @@ The GUI is also able to receive OSC messages in a signal-handler model using OSC
 
 class ControllerGUI(Gtk.Window):
     def delete_event(self, widget, event, data=None):
-        quitDialog = Gtk.MessageDialog(parent=None,
+        quitDialog = Gtk.MessageDialog(parent=widget,
                                        modal=True,
                                        message_type=Gtk.MessageType.QUESTION,
                                        buttons=Gtk.ButtonsType.YES_NO,
@@ -115,7 +117,7 @@ class ControllerGUI(Gtk.Window):
                 liblo.send(self.target, "/access_action/Region/cut-region-gain")
 
     def fader_bank_mode_changed(self, event, channel, value):
-        if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
+        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW #TODO review this for new grouping with VCA
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
                 liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
@@ -123,7 +125,7 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def fader_bank_mode_untouched(self, event, value):
-        if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
+        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW #TODO review this for new grouping with VCA
             # print("Unotuch event: %x", value)
             for i in range(0, 8):
                 if value & (1 << i):
@@ -155,7 +157,14 @@ class ControllerGUI(Gtk.Window):
     def pan_pos_single_mode_changed(self, event, value):
         # TODO enable touch automation when available in Ardour
         # liblo.send(self.target, "/select/pan_stereo_position/touch", 1)
-        liblo.send(self.target, "/select/pan_stereo_position", value)
+
+        # Prefer center point (0.5)
+        corrected_pan_val = value
+        dist_2_center = abs(corrected_pan_val - 0.5)
+        if dist_2_center < 0.05:
+            corrected_pan_val = 0.5
+
+        liblo.send(self.target, "/select/pan_stereo_position", corrected_pan_val)
         return True
 
     def pan_pos_single_mode_untouched(self, event):
@@ -166,7 +175,17 @@ class ControllerGUI(Gtk.Window):
     def pan_width_single_mode_changed(self, event, value):
         # TODO enable touch automation when available in Ardour
         # liblo.send(self.target, "/select/pan_stereo_width/touch", 1)
-        liblo.send(self.target, "/select/pan_stereo_width", value)
+
+        #Prefer center point (0.5)
+        corrected_pan_val = value
+        dist_2_center = abs(corrected_pan_val - 0.5)
+        if dist_2_center < 0.05:
+            corrected_pan_val = 0.5
+
+        #TODO I believe this is an ardour bug but pan must be sent between -1 and 1
+        corrected_pan_val = corrected_pan_val * 2.0 - 1.0
+
+        liblo.send(self.target, "/select/pan_stereo_width", corrected_pan_val)
         return True
 
     def pan_width_single_mode_untouched(self, event):
@@ -196,13 +215,33 @@ class ControllerGUI(Gtk.Window):
     def strip_select_changed(self, widget, issid):
         self.safe_strip_select(issid)
 
-    def refresh_strip_list(self, widget):
-        self.strip_table.clear_strips()
+    def refresh_strip_list_ALL(self, widget):
+        self.strip_table_tracks.clear_strips()
+        self.strip_table_VCA.clear_strips()
+
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
-        liblo.send(self.target, "/set_surface", 0, 7, 24771, 2, 0)  # Check Ardour OSC preferences for reference of these values
+        liblo.send(self.target, "/set_surface", 0, 23, 24771, 2, 0)  # Check Ardour OSC preferences for reference of these values
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
-        # the feedback value 16579 ....
+
         liblo.send(self.target, "/strip/list")
+
+    def btn_VCA_mode_clicked(self, widget):
+        if self.bVCAmode is not True:
+            self.bSpill = False
+            self.bVCAmode = True
+            self.btn_activate_VCA_mode.set_active_state(True)
+            self.btn_activate_TrkBus_mode.set_active_state(False)
+            self.set_VCA_strip_view_mode()
+            self.refresh_strip_list_ALL(None)
+
+    def btn_TrkBus_mode_clicked(self, widget):
+        if self.bVCAmode is True or self.bSpill is True:
+            self.bSpill = False
+            self.bVCAmode = False
+            self.btn_activate_VCA_mode.set_active_state(False)
+            self.btn_activate_TrkBus_mode.set_active_state(True)
+            self.set_VCA_strip_view_mode()
+            self.refresh_strip_list_ALL(None)
 
     def bank_channel_select_changed(self, widget, index, value):
         self.strips_list_selbank[index].set_select(value)
@@ -241,6 +280,21 @@ class ControllerGUI(Gtk.Window):
     def bank_rec_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/recenable", ichannel, int(bvalue))
 
+    def bank_spill_clicked(self, widget, ichannel):
+        self.bSpill = True
+        self.bVCAmode = False
+        self.btn_activate_VCA_mode.set_active_state(False)
+        self.btn_activate_TrkBus_mode.set_active_state(True)
+        self.set_VCA_strip_view_mode()
+        liblo.send(self.target, "/strip/spill", ichannel)
+        self.strip_table_tracks.clear_strips()
+        self.strip_table_VCA.clear_strips()
+        liblo.send(self.target, "/strip/list")
+
+        #TODO there is an Ardour crash when moving a VCA fader without spilling before
+
+        #TODO spend faders cannot be selected from 5 (only sends 1 to 4 work properly)
+
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
 
@@ -249,41 +303,49 @@ class ControllerGUI(Gtk.Window):
 
     # Callbacks from OSC incoming messages
     def fader_osc_changed(self, widget, ichannel, fvalue):
-        # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
-        self.strip_table.set_fader(ichannel, fvalue)
+        #print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
+        self.strip_table_tracks.set_fader(ichannel, fvalue)
+        self.strip_table_VCA.set_fader(ichannel, fvalue)
 
     def fader_gain_osc_changed(self, widget, ichannel, fvalue):
-        # print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
-        self.strip_table.set_fader_gain(ichannel, fvalue)
+        #print("fader received on channel '%d' with value '%f'" % (ichannel, fvalue))
+        self.strip_table_tracks.set_fader_gain(ichannel, fvalue)
+        self.strip_table_VCA.set_fader_gain(ichannel, fvalue)
 
     def solo_osc_changed(self, widget, ichannel, bvalue):
         # print "solo received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        self.strip_table.set_solo(ichannel, bvalue)
+        self.strip_table_tracks.set_solo(ichannel, bvalue)
+        self.strip_table_VCA.set_solo(ichannel, bvalue)
 
     def mute_osc_changed(self, widget, ichannel, bvalue):
         # print "mute received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        self.strip_table.set_mute(ichannel, bvalue)
+        self.strip_table_tracks.set_mute(ichannel, bvalue)
+        self.strip_table_VCA.set_mute(ichannel, bvalue)
 
     def rec_osc_changed(self, widget, ichannel, bvalue):
         # print "rec received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        self.strip_table.set_rec(ichannel, bvalue)
+        self.strip_table_tracks.set_rec(ichannel, bvalue)
 
     def select_osc_changed(self, widget, ichannel, bvalue):
         # print "select received on channel '%d' with state '%s'" % (ichannel, bvalue)
-        self.strip_table.strip_select(ichannel, bvalue)
+        if not self.bVCAmode:
+            self.strip_table_tracks.strip_select(ichannel, bvalue) #This is ok for track/bus since ssid is checked inside
+            if bvalue:
+                self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
+
+                # Query sends, instead of quering just hide all strips and let each send command to show its strip
+                for i in range(0, self.sends_table.get_number_of_strips()):
+                    self.sends_table.hide_strip(i + 1)
+                    self.sends_table.set_strip_name(self.sends_table.get_strip_ssid(i), "") #Using empty name to hide unused sends
+
+                self.sends_table.strip_select(1,True) #Ensuer to start always selecting the first bank
+
         if bvalue:
-            self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
-
-            # Query sends, instead of quering just hide all strips and let each send command to show its strip
-            for i in range(0, self.sends_table.get_number_of_strips()):
-                self.sends_table.hide_strip(i + 1)
-                self.sends_table.set_strip_name(self.sends_table.get_strip_ssid(i), "") #Using empty name to hide unused sends
-
-            self.sends_table.strip_select(1,True) #Ensuer to start always selecting the first bank
+            self.iLastSelectedTrackBus_ssid = ichannel
 
     def meter_osc_changed(self, widget, ichannel, fvalue):
         # print ("meter on channel '%d' = '%s'" % (ichannel, fvalue))
-        self.strip_table.set_meter(ichannel, fvalue)
+        self.strip_table_tracks.set_meter(ichannel, fvalue)
 
     def smpte_osc_changed(self, widget, svalue):
         # print("SMPTE '%s'" % (svalue))
@@ -302,18 +364,49 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def list_osc_reply_track(self, widget, ssid, name, type, mute, solo, rec, inputs, outputs):
-        self.strip_table.append_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
+        if type is stripTypes.StripEnum.AudioTrack or type is stripTypes.StripEnum.MidiTrack:
+            self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
 
     def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs):
-        self.strip_table.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+        if type is stripTypes.StripEnum.AudioBus or type is stripTypes.StripEnum.MidiBus:
+            self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+
+        if type is stripTypes.StripEnum.VCA:
+            if self.bSpill:
+                #In Spill mode, append the VCA stripe together with strips
+                self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+                #TODO hide the spill button since Im already in spill here!
+            else:
+                self.strip_table_VCA.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
     def list_osc_reply_end(self, widget):
-        self.strip_table.fill_strips()
-        self.safe_strip_select(self.strip_table.get_strip_ssid(0))
+        self.strip_table_tracks.fill_strips()
+        self.strip_table_VCA.fill_strips()
+
+        if self.bVCAmode:
+            #VCA MODE
+            self.strip_table_tracks.reset_current_selected_bank()
+            if self.strip_table_VCA.get_number_of_strips() > 0:
+                self.safe_strip_select(self.strip_table_VCA.get_strip_ssid(0))
+
+        else:
+            #TRACK/BUS MODE
+            self.strip_table_VCA.reset_current_selected_bank()
+            if self.strip_table_tracks.get_number_of_strips() > 0:
+                if self.iLastSelectedTrackBus_ssid is None:
+                    self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0))
+                else:
+                    self.safe_strip_select(self.iLastSelectedTrackBus_ssid) #TODO oju amb mode spill pots seleccionar un stripe fora de spill!
+
+        if self.bSpill:
+            GLib.timeout_add(400, self.spill_mode_blink_timer)
+
+
+        #self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0)) #TODO review this, it is really needed?
 
         # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
-        self.select_osc_changed(None, self.strip_table.get_strip_ssid(0), True)
-        self.table_bank.set_sensitive(True)
+        #self.select_osc_changed(None, self.strip_table_tracks.get_strip_ssid(0), True) #TODO is this really needed?
+        #self.table_bank.set_sensitive(True) #TODO delete
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -321,20 +414,20 @@ class ControllerGUI(Gtk.Window):
         self.stack.set_visible_child_full("strip_list", Gtk.StackTransitionType.SLIDE_DOWN)
 
     def eBtn_next_clicked(self, widget):
-        if self.strip_table.get_current_selected_strip_index() != None:
-            next_select = self.strip_table.get_current_selected_strip_index() + 1
-            if next_select == self.strip_table.get_number_of_strips():
+        if self.strip_table_tracks.get_current_selected_strip_index() != None:
+            next_select = self.strip_table_tracks.get_current_selected_strip_index() + 1
+            if next_select == self.strip_table_tracks.get_number_of_strips():
                 next_select = 0
 
-            self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
+            self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(next_select))
 
     def eBtn_prev_clicked(self, widget):
-        if self.strip_table.get_current_selected_strip_index() != None:
-            next_select = self.strip_table.get_current_selected_strip_index() - 1
+        if self.strip_table_tracks.get_current_selected_strip_index() != None:
+            next_select = self.strip_table_tracks.get_current_selected_strip_index() - 1
             if next_select == -1:
-                next_select = self.strip_table.get_number_of_strips() - 1
+                next_select = self.strip_table_tracks.get_number_of_strips() - 1
 
-            self.safe_strip_select(self.strip_table.get_strip_ssid(next_select))
+            self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(next_select))
 
     def edit_phaseBtn_clicked(self, widget):
         liblo.send(self.target, "/select/polarity", int(not self.eBtn_phase.get_active_state()))
@@ -418,6 +511,7 @@ class ControllerGUI(Gtk.Window):
         self.ePanner.set_panner_position(value)
 
     def select_panWidth_osc_changed(self, widget, value):
+        #print("Pan Width received value '%f'" % (value))
         self.faderCtl.move_single_pan_width(value)
         self.ePanner.set_panner_width(value)
 
@@ -461,12 +555,44 @@ class ControllerGUI(Gtk.Window):
 
     #Safe select to handle state of stereo panners properly and unificate all calls to /strip/select
     def safe_strip_select(self, ssid):
-        if self.strip_table.get_current_selected_strip_ssid() != ssid:
-            self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
-            self.faderCtl.move_single_pan_width(1.0) #set fader width at center
-        liblo.send(self.target, "/strip/select", ssid, 1)
+        if self.strip_table_tracks.check_if_ssid_exists(ssid):
+            if self.strip_table_tracks.get_current_selected_strip_ssid() != ssid:
+                self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
+                self.faderCtl.move_single_pan_width(1.0) #set fader width at center
+            liblo.send(self.target, "/strip/select", ssid, 0) #TODO I must send a zero not a 1 to select! this must be a bug in Ardour!
+
+        elif self.strip_table_VCA.check_if_ssid_exists(ssid):
+            #print("VCA selWdiget clicked with ssid '%d'" % (ssid))
+            self.strip_table_VCA.strip_select(ssid, True)  # This is ok for track/bus since ssid is checked inside
+
+    # Set the view mode to see track/bus or VCA's
+    def set_VCA_strip_view_mode(self):
+        if self.bVCAmode:
+            #Enableing VCA MODE
+            self.strip_table_tracks.hide()
+            self.strip_table_VCA.show()
+        else:
+            #Enableing TRACK/BUS MODE
+            self.strip_table_VCA.hide()
+            self.strip_table_tracks.show()
+
+    def spill_mode_blink_timer(self):
+        if self.bSpill:
+            self.btn_activate_TrkBus_mode.set_active_state(not self.btn_activate_TrkBus_mode.get_active_state())
+            self.btn_activate_TrkBus_mode.set_label("SPILLED\nSTRIPS")
+            self.btn_activate_VCA_mode.set_active_state(self.btn_activate_TrkBus_mode.get_active_state())
+            self.btn_activate_VCA_mode.set_label("SPILLED\nVCA")
+        else:
+            self.set_VCA_strip_view_mode()
+            self.btn_activate_TrkBus_mode.set_label("STRIPS")
+            self.btn_activate_VCA_mode.set_label("VCA's")
+        return self.bSpill
 
     def __init__(self):
+        self.bVCAmode = False #Controls if its showing track/bus or VCA's
+        self.bSpill = False #Signal when in spill mode
+        self.iLastSelectedTrackBus_ssid = None
+
         Gtk.Window.__init__(self, title="OSC Controller")
         # Reding config data from config.xml
         tree = ET.parse('config.xml')
@@ -607,11 +733,23 @@ class ControllerGUI(Gtk.Window):
         self.btn_session_save.connect("clicked", self.btn_session_save_clicked)
         self.headerBar.pack_end(self.btn_session_save)
 
-        # Refresh button
-        self.btn_refresh = Gtk.Button()
-        self.btn_refresh.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
-        self.btn_refresh.connect("clicked", self.refresh_strip_list)
-        self.headerBar.pack_end(self.btn_refresh)
+        # Refresh button All
+        self.btn_refresh_ALL = Gtk.Button()
+        self.btn_refresh_ALL.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
+        self.btn_refresh_ALL.connect("clicked", self.refresh_strip_list_ALL)
+        self.headerBar.pack_end(self.btn_refresh_ALL)
+
+          # Mode buttons VCA and TRack/Bus
+        self.btn_activate_VCA_mode =  simplebuttonwidget.SimpleButton("VCA's", "#ff6641")
+        self.btn_activate_VCA_mode.set_size_request(100, 100);
+        self.btn_activate_VCA_mode.set_active_state(False)
+        self.btn_activate_VCA_mode.connect("clicked", self.btn_VCA_mode_clicked)
+        self.headerBar.pack_end(self.btn_activate_VCA_mode)
+        self.btn_activate_TrkBus_mode =  simplebuttonwidget.SimpleButton("STRIPS", "#42d387")
+        self.btn_activate_TrkBus_mode.set_size_request(100, 100);
+        self.btn_activate_TrkBus_mode.set_active_state(True)
+        self.btn_activate_TrkBus_mode.connect("clicked", self.btn_TrkBus_mode_clicked)
+        self.headerBar.pack_end(self.btn_activate_TrkBus_mode)
 
         # Global bool to store loop state
         self.bLooping = False
@@ -621,17 +759,28 @@ class ControllerGUI(Gtk.Window):
         self.stack.set_transition_duration(250)
 
         #Add the strip select table
-        self.strip_table = stripTable.StripTable(8, self.PIXELS_X_SECOND)
-        self.strip_table.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
-        self.strip_table.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
-        self.strip_table.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
-        self.strip_table.connect("bank_channel_mute_changed", self.bank_channel_mute_changed)
-        self.strip_table.connect("bank_channel_rec_changed", self.bank_channel_rec_changed)
-        self.strip_table.connect("bank_channel_select_changed", self.bank_channel_select_changed)
-        self.strip_table.connect("bank_channel_ssid_name_changed", self.bank_channel_ssid_name_changed)
-        self.strip_table.connect("bank_channel_type_changed", self.bank_channel_type_changed)
-        self.strip_table.connect("strip_select_changed", self.strip_select_changed)
-        self.vbox_top.pack_start(self.strip_table, expand=True, fill=True, padding=0)
+        self.strip_table_tracks = stripTable.StripTable(8, self.PIXELS_X_SECOND)
+        self.strip_table_tracks.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
+        self.strip_table_tracks.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
+        self.strip_table_tracks.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
+        self.strip_table_tracks.connect("bank_channel_mute_changed", self.bank_channel_mute_changed)
+        self.strip_table_tracks.connect("bank_channel_rec_changed", self.bank_channel_rec_changed)
+        self.strip_table_tracks.connect("bank_channel_select_changed", self.bank_channel_select_changed)
+        self.strip_table_tracks.connect("bank_channel_ssid_name_changed", self.bank_channel_ssid_name_changed)
+        self.strip_table_tracks.connect("bank_channel_type_changed", self.bank_channel_type_changed)
+        self.strip_table_tracks.connect("strip_select_changed", self.strip_select_changed)
+        self.vbox_top.pack_start(self.strip_table_tracks, expand=True, fill=True, padding=0)
+
+        self.strip_table_VCA = stripTable.StripTable(8, self.PIXELS_X_SECOND, is_vca = True)
+        self.strip_table_VCA.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
+        self.strip_table_VCA.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
+        self.strip_table_VCA.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
+        self.strip_table_VCA.connect("bank_channel_mute_changed", self.bank_channel_mute_changed)
+        self.strip_table_VCA.connect("bank_channel_select_changed", self.bank_channel_select_changed)
+        self.strip_table_VCA.connect("bank_channel_ssid_name_changed", self.bank_channel_ssid_name_changed)
+        self.strip_table_VCA.connect("bank_channel_type_changed", self.bank_channel_type_changed)
+        self.strip_table_VCA.connect("strip_select_changed", self.strip_select_changed)
+        self.vbox_top.pack_start(self.strip_table_VCA, expand=True, fill=True, padding=0)
 
         #Add a separator
         self.bank_separator = Gtk.Image.new_from_file("icons/bank_spacer.png")
@@ -652,7 +801,7 @@ class ControllerGUI(Gtk.Window):
             self.strips_list_selbank[i].connect("solo_changed", self.bank_solo_clicked)
             self.strips_list_selbank[i].connect("mute_changed", self.bank_mute_clicked)
             self.strips_list_selbank[i].connect("rec_changed", self.bank_rec_clicked)
-        self.table_bank.set_sensitive(False)
+            self.strips_list_selbank[i].connect("spill_changed", self.bank_spill_clicked)
         self.vbox_top.pack_end(self.table_bank, expand=False, fill=False, padding=0)
 
         # Adding the AVR serial control object
@@ -670,10 +819,6 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.connect("pan_width_single_mode_untouched", self.pan_width_single_mode_untouched)
         self.faderCtl.connect("send_single_mode_changed", self.send_single_mode_changed)
         self.faderCtl.connect("send_single_mode_untouched", self.send_single_mode_untouched)
-
-        # Refine intial bank widgets state
-        for i in range(0, 8):
-            self.strips_list_selbank[i].set_strip_type(stripselwidget.StripEnum.Empty)
 
         self.connect("destroy", self.destroy)
         self.connect("delete_event", self.delete_event)
@@ -894,6 +1039,13 @@ class ControllerGUI(Gtk.Window):
         self.set_size_request(window_width, window_height)
         self.show_all()
         self.show()
+
+        #Hide widgets in the fader control bank (bottom)
+        for selbank in self.strips_list_selbank:
+            selbank.set_strip_type(StripEnum.Empty)
+
+        #Set the view according the boolean VCA mode
+        self.set_VCA_strip_view_mode()
 
         #Start with all send strips hidden, must be donw here after the show_all() of the main screen
         for i in range(0, self.sends_table.get_number_of_strips()):

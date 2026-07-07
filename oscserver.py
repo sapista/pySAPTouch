@@ -12,6 +12,7 @@ This models ensures a thread-safe gtk signal generation for incoming osc message
 
 import stripselwidget
 import liblo
+import socket
 from gi.repository import GObject
 
 
@@ -134,6 +135,12 @@ class OSCServer(GObject.GObject):
     def __init__(self, osc_port):
         GObject.GObject.__init__(self)
         self.OSCReceiver = liblo.ServerThread(osc_port)
+
+        #Increase the received socket buffer to 1 MBytes
+        fd =  self.OSCReceiver.fileno()
+        sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1048576)
+
         self.OSCReceiver.add_method("/strip/fader", 'if', self.fader_callback)
         self.OSCReceiver.add_method("/strip/gain", 'if', self.fader_gain_callback)
         self.OSCReceiver.add_method("/strip/solo", 'if', self.solo_callback)

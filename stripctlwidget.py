@@ -29,6 +29,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
         'rec_changed': (GObject.SIGNAL_RUN_LAST, None,
                         (int, bool)),
 
+        'spill_changed': (GObject.SIGNAL_RUN_LAST, None,
+                        (int, )),
+
         'fader_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (int, float))
     }
@@ -66,6 +69,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.table_selrecsolomute.attach(self.btn_solo, 0, 2, 1, 1)
         self.btn_mute = simplebuttonwidget.SimpleButton("MUTE", "#FFFF00")
         self.table_selrecsolomute.attach(self.btn_mute, 1, 2, 1, 1)
+        self.btn_spill = simplebuttonwidget.SimpleButton("SPILL", "#FF9023")
+        self.btn_spill.set_hexpand(True)
+        self.btn_spill.set_size_request(-1, 50)
+        self.table_selrecsolomute.attach(self.btn_spill, 0, 0, 2, 1)
 
         self.add(self.vbox)
         self.vbox.set_border_width(7)
@@ -75,10 +82,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.btn_solo.connect("clicked", self.solo_clicked)
         self.btn_mute.connect("clicked", self.mute_clicked)
         self.btn_rec.connect("clicked", self.rec_clicked)
+        self.btn_spill.connect("clicked", self.spill_clicked)
 
         self.set_ssid_name(None, "")
         self.set_strip_type(StripEnum.Empty)
-
         self.set_size_request(-1, 120)
 
     def set_ssid_name(self, ssid, name):
@@ -106,29 +113,42 @@ class StripCtlWidget(customframewidget.CustomFrame):
                         StripEnum.MidiBus: 'Midi Bus',
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
-        if self.type == StripEnum.Empty:
-           self.set_ssid_name(None, "")
+
+        self.btn_edit.hide()
+        self.btn_mute.hide()
+        self.btn_solo.hide()
+        self.btn_rec.hide()
+        self.btn_select.hide()
+        self.btn_spill.hide()
+        self.lbl_strip_type.hide()
+        self.lbl_title.hide()
+        self.lbl_gain.hide()
+
+        if self.type is not StripEnum.Empty:
+            self.btn_mute.show()
+            self.btn_solo.show()
+            self.lbl_strip_type.show()
+            self.lbl_title.show()
+            self.lbl_gain.show()
+
+        if self.type is StripEnum.AudioTrack or  self.type is StripEnum.MidiTrack:
+            self.btn_rec.show()
+            self.btn_edit.show()
+            self.btn_select.show()
+
+        if self.type is StripEnum.AudioBus or self.type is StripEnum.MidiBus:
+            self.btn_edit.show()
+            self.btn_select.show()
+
+        if self.type is StripEnum.VCA:
+            self.btn_spill.show()
 
         if self.ssid is None:
             self.lbl_strip_type.set_label("")
             self.lbl_gain.set_label("")
         else:
             self.lbl_strip_type.set_label(str(self.ssid) + "-" + dirstriptype[self.type])
-        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-            self.btn_rec.show()
-        else:
-            self.btn_rec.hide()
 
-        if self.type is StripEnum.Empty:
-            self.btn_select.hide()
-            self.btn_mute.hide()
-            self.btn_solo.hide()
-            self.btn_edit.hide()
-        else:
-            self.btn_select.show()
-            self.btn_mute.show()
-            self.btn_solo.show()
-            self.btn_edit.show()
 
     def set_select(self, bvalue):
         self.select = bvalue
@@ -168,6 +188,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
     def rec_clicked(self, widget):
         self.rec = not self.rec
         self.emit('rec_changed', self.ssid, self.rec)
+
+    def spill_clicked(self, widget):
+        self.emit('spill_changed', self.ssid)
 
     def get_ssid(self):
         return self.ssid

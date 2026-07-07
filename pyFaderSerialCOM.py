@@ -39,14 +39,20 @@ class FaderCOM(GObject.GObject):
         self.ser.port = port
         self.ser.baudrate = baudrate
         self.ser.timeout = 1  # 1 second reading timeout to allow to stop the reading thread
-        self.ser.open()
         self.serial_polling = False
-        self.serial_read_thread = threading.Thread(target=self.readSerialPort)
-        if not self.ser.is_open:
-            exit('Error: not able to open serial port')
-        else:
-            self.serial_polling = True
-            self.serial_read_thread.start()
+
+        try:
+            self.ser.open()
+            self.serial_read_thread = threading.Thread(target=self.readSerialPort)
+            if not self.ser.is_open:
+                exit('Error: not able to open serial port')
+            else:
+                self.serial_polling = True
+                self.serial_read_thread.start()
+
+        except serial.SerialException:
+            # 2. If the hardware isn't plugged in, catch the crash!
+            print("Warning: Serial Hardware not found. Creating dummy port to prevent crash. No fader module com!")
 
         # RX packet holder
         self.RX_packet = bytearray()
@@ -73,7 +79,8 @@ class FaderCOM(GObject.GObject):
         packet.append(byte1)
         packet.append(byte2)
 
-        self.ser.write(packet)
+        if self.ser.is_open:
+            self.ser.write(packet)
 
     def readSerialPort(self):
         while self.serial_polling:
