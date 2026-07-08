@@ -67,9 +67,6 @@ class ControllerGUI(Gtk.Window):
     def btn_cut_mode_clicked(self, widget):
         liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-cut")
 
-    def btn_audition_mode_clicked(self, widget):
-        liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-audition")
-
     def btn_timefx_mode_clicked(self, widget):
         liblo.send(self.target, "/access_action/MouseMode/set-mouse-mode-timefx")
 
@@ -83,7 +80,7 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/toggle_click")
 
     def btn_solo_cancel_clicked(self, widget):
-        liblo.send(self.target, "/cancel_all_solos") #TODO, not working in Ardour 6.0
+        liblo.send(self.target, "/cancel_all_solos", 1.0)
 
     def btn_playStop_clicked(self, widget):
         liblo.send(self.target, "/toggle_roll")
@@ -135,14 +132,12 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def trim_single_mode_changed(self, event, value):
-        # TODO enable touch automation when available in Ardour
-        # liblo.send(self.target, "/select/trimdB/touch", 1)
+        liblo.send(self.target, "/select/trimdB/touch", 1)
         liblo.send(self.target, "/select/trimdB", value)
         return True
 
     def trim_single_mode_untouched(self, event):
-        # TODO enable touch automation when available in Ardour
-        #liblo.send(self.target, "/select/trimdB/touch", 0)
+        liblo.send(self.target, "/select/trimdB/touch", 0)
         return True
 
     def fader_single_mode_changed(self, event, value):
@@ -156,6 +151,9 @@ class ControllerGUI(Gtk.Window):
 
     def pan_pos_single_mode_changed(self, event, value):
         # TODO enable touch automation when available in Ardour
+
+        #TODO tha PAN control seams to be wrong, autmation failing, wide control on mono channels! revise!
+
         # liblo.send(self.target, "/select/pan_stereo_position/touch", 1)
 
         # Prefer center point (0.5)
@@ -251,6 +249,8 @@ class ControllerGUI(Gtk.Window):
 
     def bank_channel_type_changed(self, widget, index, type):
         self.strips_list_selbank[index].set_strip_type(type)
+        if type is StripEnum.VCA and self.bSpill:
+            self.strips_list_selbank[index].btn_spill.hide()
 
     def bank_channel_fader_changed(self, widget, index, value):
         self.faderCtl.move_bank_fader(index, value)
@@ -293,7 +293,7 @@ class ControllerGUI(Gtk.Window):
 
         #TODO there is an Ardour crash when moving a VCA fader without spilling before
 
-        #TODO spend faders cannot be selected from 5 (only sends 1 to 4 work properly)
+        #TODO send faders cannot be selected from 5 (only sends 1 to 4 work properly)
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
@@ -375,7 +375,6 @@ class ControllerGUI(Gtk.Window):
             if self.bSpill:
                 #In Spill mode, append the VCA stripe together with strips
                 self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
-                #TODO hide the spill button since Im already in spill here!
             else:
                 self.strip_table_VCA.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
@@ -396,17 +395,20 @@ class ControllerGUI(Gtk.Window):
                 if self.iLastSelectedTrackBus_ssid is None:
                     self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0))
                 else:
-                    self.safe_strip_select(self.iLastSelectedTrackBus_ssid) #TODO oju amb mode spill pots seleccionar un stripe fora de spill!
+                    self.safe_strip_select(self.iLastSelectedTrackBus_ssid)
 
         if self.bSpill:
-            GLib.timeout_add(400, self.spill_mode_blink_timer)
+            if self.strip_table_tracks.get_number_of_strips() > 1:
+                GLib.timeout_add(400, self.spill_mode_blink_timer)
+            else:
+                self.bVCAmode = False
+                self.btn_VCA_mode_clicked(None)
+                #TODO this return to VCA view since there are nothing to spill. but a message should be added!
 
 
         #self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0)) #TODO review this, it is really needed?
-
         # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
         #self.select_osc_changed(None, self.strip_table_tracks.get_strip_ssid(0), True) #TODO is this really needed?
-        #self.table_bank.set_sensitive(True) #TODO delete
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -454,7 +456,7 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/select/monitor_disk", int(not self.eBtn_monitorDisk.get_active_state()))
 
     def edit_trimdB_automation_changed(self, widget, value):
-        liblo.send(self.target, "/select/trimdB/automation", value) #TODO trimdB automation is not available in Ardour 6.0, check it in future releases
+        liblo.send(self.target, "/select/trimdB/automation", value)
 
     def edit_fader_automation_changed(self, widget, value):
         liblo.send(self.target, "/select/fader/automation", value)
@@ -559,7 +561,7 @@ class ControllerGUI(Gtk.Window):
             if self.strip_table_tracks.get_current_selected_strip_ssid() != ssid:
                 self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
                 self.faderCtl.move_single_pan_width(1.0) #set fader width at center
-            liblo.send(self.target, "/strip/select", ssid, 0) #TODO I must send a zero not a 1 to select! this must be a bug in Ardour!
+            liblo.send(self.target, "/strip/select", ssid, 0) #TODO I must send a zero not a 1 to select! this must be a bug in Ardour (8.12)!
 
         elif self.strip_table_VCA.check_if_ssid_exists(ssid):
             #print("VCA selWdiget clicked with ssid '%d'" % (ssid))
@@ -660,11 +662,6 @@ class ControllerGUI(Gtk.Window):
         self.btn_cut_mode.connect("clicked", self.btn_cut_mode_clicked)
         self.headerBar.pack_start(self.btn_cut_mode)
 
-        self.btn_audition_mode = Gtk.Button()
-        self.btn_audition_mode.set_image(Gtk.Image.new_from_file("icons/audition_mode.png"))
-        self.btn_audition_mode.connect("clicked", self.btn_audition_mode_clicked)
-        self.headerBar.pack_start(self.btn_audition_mode)
-
         self.btn_timefx_mode = Gtk.Button()
         self.btn_timefx_mode.set_image(Gtk.Image.new_from_file("icons/timefx_mode.png"))
         self.btn_timefx_mode.connect("clicked", self.btn_timefx_mode_clicked)
@@ -739,7 +736,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_refresh_ALL.connect("clicked", self.refresh_strip_list_ALL)
         self.headerBar.pack_end(self.btn_refresh_ALL)
 
-          # Mode buttons VCA and TRack/Bus
+        # Mode buttons VCA and TRack/Bus
         self.btn_activate_VCA_mode =  simplebuttonwidget.SimpleButton("VCA's", "#ff6641")
         self.btn_activate_VCA_mode.set_size_request(100, 100);
         self.btn_activate_VCA_mode.set_active_state(False)

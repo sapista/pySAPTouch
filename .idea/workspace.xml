@@ -1,59 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="fix trim fader position on edit mode">
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/sapista.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/sapista.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pySAPTouch.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pySAPTouch.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="fix some bugs and added VCA mode, started to work with Ardour 8.12">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LEDWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/LEDWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO" beforeDir="false" afterPath="$PROJECT_DIR$/TODO" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/automationTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/automationTypes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bankAvrController.py" beforeDir="false" afterPath="$PROJECT_DIR$/bankAvrController.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/config.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customframewidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/customframewidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/SAPAudio_Logo.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/SAPAudio_Logo.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/audition_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/audition_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/bank_spacer.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/bank_spacer.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/bank_spacer.xcf" beforeDir="false" afterPath="$PROJECT_DIR$/icons/bank_spacer.xcf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/close.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/close.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/close_small.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/close_small.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/contenttool_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/contenttool_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/cut_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/cut_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/draw_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/draw_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/loop.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loop.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/loopGreen.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loopGreen.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/loopWhite.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/loopWhite.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/metronome.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/metronome.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/next.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/next.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/next.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/next.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/object_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/object_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/play_pauseGreen.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pauseGreen.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/play_pauseWhite.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pauseWhite.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/play_pause_icon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/play_pause_icon.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/prev.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/prev.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/range_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/range_mode.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/reload_32.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/reload_32.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/sapaudio_logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/sapaudio_logo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/save_icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/save_icon.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/save_icon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/icons/save_icon.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/icons/timefx_mode.png" beforeDir="false" afterPath="$PROJECT_DIR$/icons/timefx_mode.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/miniMeter.py" beforeDir="false" afterPath="$PROJECT_DIR$/miniMeter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pannerWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/pannerWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyFaderSerialCOM.py" beforeDir="false" afterPath="$PROJECT_DIR$/pyFaderSerialCOM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saptouch_theme.css" beforeDir="false" afterPath="$PROJECT_DIR$/saptouch_theme.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simplebuttonwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/simplebuttonwidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTypes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -278,7 +229,15 @@
       <option name="project" value="LOCAL" />
       <updated>1597075612246</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="fix some bugs and added VCA mode, started to work with Ardour 8.12">
+      <option name="closed" value="true" />
+      <created>1783419424273</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1783419424274</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -306,7 +265,8 @@
     <MESSAGE value="headerbar completed" />
     <MESSAGE value="added the encoder" />
     <MESSAGE value="fix trim fader position on edit mode" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix trim fader position on edit mode" />
+    <MESSAGE value="fix some bugs and added VCA mode, started to work with Ardour 8.12" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix some bugs and added VCA mode, started to work with Ardour 8.12" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
