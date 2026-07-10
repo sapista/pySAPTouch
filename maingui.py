@@ -272,6 +272,9 @@ class ControllerGUI(Gtk.Window):
         self.safe_strip_select(ichannel)
         self.faderCtl.set_state(bankAvrController.FaderBankState.SINGLE_CHANNEL_EDIT)
         self.stack.set_visible_child_full("edit_mode", Gtk.StackTransitionType.SLIDE_UP) #Switch to edit mode
+        #Hide Stripe/VCA buttons to avoid potential confusion and force to use the close button X
+        self.btn_activate_VCA_mode.hide()
+        self.btn_activate_TrkBus_mode.hide()
 
     def bank_sel_clicked(self, widget, ichannel, bvalue):
         if bvalue:
@@ -290,10 +293,6 @@ class ControllerGUI(Gtk.Window):
         self.strip_table_tracks.clear_strips()
         self.strip_table_VCA.clear_strips()
         liblo.send(self.target, "/strip/list")
-
-        #TODO there is an Ardour crash when moving a VCA fader without spilling before
-
-        #TODO send faders cannot be selected from 5 (only sends 1 to 4 work properly)
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
@@ -414,6 +413,8 @@ class ControllerGUI(Gtk.Window):
     def eBtn_close_clicked(self, widget):
         self.faderCtl.set_state(bankAvrController.FaderBankState.EIGHT_CHANNELS_FADERS)
         self.stack.set_visible_child_full("strip_list", Gtk.StackTransitionType.SLIDE_DOWN)
+        self.btn_activate_VCA_mode.show()
+        self.btn_activate_TrkBus_mode.show()
 
     def eBtn_next_clicked(self, widget):
         if self.strip_table_tracks.get_current_selected_strip_index() != None:
@@ -535,6 +536,9 @@ class ControllerGUI(Gtk.Window):
 
     def select_send_gain_osc_changed(self, widget, send_id, gain_value):
         self.sends_table.set_fader_gain(send_id, gain_value)
+
+    def send_select_changed(self, widget, issid):
+        self.sends_table.strip_select(issid, True)  # This is ok for track/bus since ssid is checked inside
 
     def bank_send_active_changed(self, widget, index, value):
         self.eSendsCtl[index].set_send_active(value)
@@ -957,6 +961,8 @@ class ControllerGUI(Gtk.Window):
         self.sends_table.connect("bank_channel_fader_changed", self.bank_send_fader_changed)
         self.sends_table.connect("bank_channel_fader_gain_changed", self.bank_send_fader_gain_changed)
         self.sends_table.connect("bank_channel_ssid_name_changed", self.bank_send_ssid_name_changed)
+        self.sends_table.connect("strip_select_changed", self.send_select_changed)
+
         self.sends_table.set_size_request(638, -1)
         self.eVBox_sends.pack_start(self.sends_table, expand=True, fill=True, padding=0)
         self.eHBox_edit.pack_end(self.eFrame_sends, expand=False, fill=True, padding=0)

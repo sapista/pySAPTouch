@@ -138,7 +138,6 @@ class StripTable(Gtk.ScrolledWindow):
                 self.table.attach(Gtk.Label(), i, 0, 1, 1)
 
         if len(self.strips_list_widgets) > 0:
-            #self.strip_select(self.strips_list_widgets[0].get_ssid(), True) #TODO comment! aja
             self.table.show_all()
             self.table.show()
         else:
@@ -155,7 +154,7 @@ class StripTable(Gtk.ScrolledWindow):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
             self.strips_list_widgets[idx].set_fader(value)  # Store fader, used in send mode
-            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank(): #TODO is this working?
+            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
                 self.emit('bank_channel_fader_changed', self.strips_list_widgets[idx].get_bank_index(), value)
 
     def set_fader_gain(self, ssid, value):
@@ -206,19 +205,19 @@ class StripTable(Gtk.ScrolledWindow):
             idx = self.strips_ssid_id_dict[ssid]
 
             if not self.send_mode:
-                self.strips_list_widgets[idx].set_selected(value) #TODO VCA cannot be selected, think about this
+                self.strips_list_widgets[idx].set_selected(value)
 
             # Check if bank has changed
             if value:  # Do not refresh the bank if selection is false
-                if self.current_selected_bank != self.strips_list_widgets[idx].get_bank(): #Only if bank changed #TODO when switching from VCA/tracks consider forcing this to happen! maybe set it to none?
+                if self.current_selected_bank != self.strips_list_widgets[idx].get_bank(): #Only if bank changed
 
                     #Change previous selected bank state
                     if self.current_selected_bank is not None:
                         for i in self.bank_strip_id_list[self.current_selected_bank]:
                             if i is not None:
                                 self.strips_list_widgets[i].set_bank_selected(False)
-                                if self.send_mode:
-                                    self.strips_list_widgets[i].set_selected(False) #TODO consider the same for VCA
+                                if self.send_mode or self.vca_mode:
+                                    self.strips_list_widgets[i].set_selected(False)
 
                     self.current_selected_bank = self.strips_list_widgets[idx].get_bank()
 
@@ -231,8 +230,8 @@ class StripTable(Gtk.ScrolledWindow):
                                 exit("FATAL ERROR: bank index lost!")
 
                             self.strips_list_widgets[strip_index].set_bank_selected(True)
-                            if self.send_mode:
-                                self.strips_list_widgets[strip_index].set_selected(True) #TODO consider the same for VCA!
+                            if self.send_mode or self.vca_mode:
+                                self.strips_list_widgets[strip_index].set_selected(True)
 
                             self.emit('bank_channel_ssid_name_changed',
                                       i,
@@ -285,7 +284,6 @@ class StripTable(Gtk.ScrolledWindow):
 
     def on_strip_selected(self, widget, issid):
         self.emit('strip_select_changed', issid)
-        #self.strip_select(issid, True) #TODO if there is no ardour feedback I will need this, check it, DELETE me!
 
     def on_meter_refresh_timeout(self):
         for stripCtl in self.strips_list_widgets:

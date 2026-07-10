@@ -136,10 +136,14 @@ class OSCServer(GObject.GObject):
         GObject.GObject.__init__(self)
         self.OSCReceiver = liblo.ServerThread(osc_port)
 
-        #Increase the received socket buffer to 1 MBytes
+        #Increase the received socket buffer
         fd =  self.OSCReceiver.fileno()
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1048576)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4194304) # 4 MB buffer
+
+        # TODO this UDP buffer is going to be limited by OS!
+        #To make this change permanent so it survives a reboot,
+        # add the line net.core.rmem_max=4194304 to the bottom of the /etc/sysctl.conf file.
 
         self.OSCReceiver.add_method("/strip/fader", 'if', self.fader_callback)
         self.OSCReceiver.add_method("/strip/gain", 'if', self.fader_gain_callback)

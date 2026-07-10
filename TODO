@@ -1,7 +1,9 @@
 
 > Sends. Implement
 
-> VCA
+> VCA's
+ TODO there is an Ardour (9.7.0) crash when moving a VCA fader that has no any channel assigned
+    --> Report this to bug tracker
 
 ################################################################################################################
 # Direct Access Physical Buttons
@@ -47,11 +49,6 @@ Keyboard Shift
 /access_action/MouseMode/set-mouse-mode-range	Range Tool
 /access_action/MouseMode/set-mouse-mode-timefx
 
-/cancel_all_solos #Cancel All Solos/PFLs/AFLs, This command is not working in Ardour 6.0, futher testing is needed
-/toggle_click 	#Toggle metronome click on and off
-
-
-/save_state #equivalent to control+s or session>>save
 
 /jog encoder modes
     # as a jog wheel issuing the command /jog_mode 0
@@ -75,7 +72,7 @@ DEBUG OSC
 dump_osc 8000
 
 #Config surface
-send_osc osc.udp://127.0.0.1:3819 /set_surface 0 7 24771 2 0
+send_osc osc.udp://127.0.0.1:3819 /set_surface 0 23 24771 2 0
 
 #Select a strip
 send_osc osc.udp://127.0.0.1:3819 /strip/select 1 1
