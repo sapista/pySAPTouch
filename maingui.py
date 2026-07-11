@@ -114,7 +114,7 @@ class ControllerGUI(Gtk.Window):
                 liblo.send(self.target, "/access_action/Region/cut-region-gain")
 
     def fader_bank_mode_changed(self, event, channel, value):
-        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW #TODO review this for new grouping with VCA
+        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
                 liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
@@ -122,7 +122,7 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def fader_bank_mode_untouched(self, event, value):
-        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW #TODO review this for new grouping with VCA
+        if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             # print("Unotuch event: %x", value)
             for i in range(0, 8):
                 if value & (1 << i):
@@ -183,6 +183,7 @@ class ControllerGUI(Gtk.Window):
         #TODO I believe this is an ardour bug but pan must be sent between -1 and 1
         corrected_pan_val = corrected_pan_val * 2.0 - 1.0
 
+        #TODO do not send width for mono strips!!!! Also force with to stay fix for mono strips in their pan widget
         liblo.send(self.target, "/select/pan_stereo_width", corrected_pan_val)
         return True
 
@@ -195,7 +196,7 @@ class ControllerGUI(Gtk.Window):
         if self.sends_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.eSendsCtl[channel].get_sendID()
             if selSSID is not None:
-                # TODO enable touch automation when available in Ardour
+                # TODO enable touch automation when available in Ardour (Unhandled OSC message: /select/send/touch i:3 i:1)
                 #liblo.send(self.target, "/select/send/touch", selSSID, 1)
                 liblo.send(self.target, "/select/send_fader", selSSID, value)
             else:
@@ -205,7 +206,7 @@ class ControllerGUI(Gtk.Window):
 
     def send_single_mode_untouched(self, event, channel):
         selSSID = self.eSendsCtl[channel].get_sendID()
-        # TODO enable touch automation when available in Ardour
+        # TODO enable touch automation when available in Ardour (Unhandled OSC message: /select/send/touch i:3 i:1)
         #if selSSID is not None:
             #liblo.send(self.target, "/select/send/touch", selSSID, 0)
         return True
@@ -398,16 +399,25 @@ class ControllerGUI(Gtk.Window):
 
         if self.bSpill:
             if self.strip_table_tracks.get_number_of_strips() > 1:
+                self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0)) #In VCA spill mode select always the first stripe
                 GLib.timeout_add(400, self.spill_mode_blink_timer)
             else:
+                #Show a message to inform there is no Strip assigned to this VCA
+                dialog = Gtk.MessageDialog(
+                    transient_for=self.get_toplevel(),
+                    modal=True,
+                    destroy_with_parent=True,
+                    message_type=Gtk.MessageType.WARNING,
+                    buttons=Gtk.ButtonsType.CLOSE,
+                    text="There is no strip assigned to the spilled VCA"
+                )
+                dialog.set_title("VCA Error")
+                dialog.run()
+                dialog.destroy()
+
+                #Return to VCA mode
                 self.bVCAmode = False
                 self.btn_VCA_mode_clicked(None)
-                #TODO this return to VCA view since there are nothing to spill. but a message should be added!
-
-
-        #self.safe_strip_select(self.strip_table_tracks.get_strip_ssid(0)) #TODO review this, it is really needed?
-        # Force bank selection because if Ardour has already selected the first ssid the OSC feedback will not be send
-        #self.select_osc_changed(None, self.strip_table_tracks.get_strip_ssid(0), True) #TODO is this really needed?
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -995,8 +1005,8 @@ class ControllerGUI(Gtk.Window):
         self.eSendsCtl = []
         for i in range(0, 4):
             self.eSendsCtl.append(selectFaderCtlWidget.SelectFaderCtlWidget(str(i), isSend = True))
-            #TODO connect signals for automation state
             self.eSendsCtl[i].connect("send_active_changed", self.edit_send_active_changed)
+            #TODO there si no OSC message in Ardour 8.12 to change automation mode of a send yet, when available connect the signals
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
         # Connect OSC message received signals

@@ -94,6 +94,15 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
         self.btn_Touch.connect("clicked", self.touch_clicked)
         self.btn_Latch.connect("clicked", self.latch_clicked)
 
+        if isSend:
+            #TODO remove this when Ardour supports send mode through OSC
+            #Disable Automation modes since they are not supported for a send in Ardour OSC
+            self.btn_Manual.set_sensitive(False)
+            self.btn_Play.set_sensitive(False)
+            self.btn_Write.set_sensitive(False)
+            self.btn_Touch.set_sensitive(False)
+            self.btn_Latch.set_sensitive(False)
+
     def set_name_label(self, name):
         if self.isSend:
             name = "Send: " + name

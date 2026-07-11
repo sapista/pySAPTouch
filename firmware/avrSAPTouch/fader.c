@@ -295,7 +295,7 @@ ISR(ADC_vect)
 
     //PID controller and refresh touched fader value
 	int16_t pError = ftarget[adcCh] - adcValue;
-	if( (pError > FADER_DEADBAND || pError < -FADER_DEADBAND) && timeouts[adcCh] < FADER_MOTORON_TIMEOUT )
+	if( (pError > FADER_DEADBAND || pError < -FADER_DEADBAND)  )
 	{
 		//Set new target value if touched
 		if((touched & (1<<adcCh)))
@@ -305,8 +305,8 @@ ISR(ADC_vect)
 		}
 
 		//P controller
-		duty = P_CONTROLLER * pError;
-
+		duty = timeouts[adcCh] < FADER_MOTORON_TIMEOUT ?  P_CONTROLLER * pError : 0;
+		
 		//Duty limits low
 		duty = duty < DUTY_LIMIT_LOW && duty > 0 ? DUTY_LIMIT_LOW : duty;
 		duty = duty > -DUTY_LIMIT_LOW && duty < 0 ? -DUTY_LIMIT_LOW : duty;
