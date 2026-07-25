@@ -103,10 +103,19 @@ class OSCServer(GObject.GObject):
         'select_pan_width_changed': (GObject.SIGNAL_RUN_LAST, None,
                                    (float,)),
 
+        'select_panner_must_have_width_control_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                     (bool,)),
+
         'select_trimdB_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
                                      (int,)),
 
         'select_fader_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                            (int,)),
+
+        'select_pan_position_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                            (int,)),
+
+        'select_pan_width_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
                                             (int,)),
 
         'select_send_name_changed': (GObject.SIGNAL_RUN_LAST, None,
@@ -141,10 +150,6 @@ class OSCServer(GObject.GObject):
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4194304) # 4 MB buffer
 
-        # TODO this UDP buffer is going to be limited by OS!
-        #To make this change permanent so it survives a reboot,
-        # add the line net.core.rmem_max=4194304 to the bottom of the /etc/sysctl.conf file.
-
         self.OSCReceiver.add_method("/strip/fader", 'if', self.fader_callback)
         self.OSCReceiver.add_method("/strip/gain", 'if', self.fader_gain_callback)
         self.OSCReceiver.add_method("/strip/solo", 'if', self.solo_callback)
@@ -174,13 +179,14 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
         self.OSCReceiver.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
         self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
+        self.OSCReceiver.add_method("/select/pan_stereo_position/automation", 'i', self.select_pan_position_automation_callback)
+        self.OSCReceiver.add_method("/select/pan_stereo_width/automation", 'i', self.select_pan_width_automation_callback)
         self.OSCReceiver.add_method("/select/send_name", 'is', self.select_send_name_callback)
         self.OSCReceiver.add_method("/select/send_fader", 'if', self.select_send_fader_callback)
         self.OSCReceiver.add_method("/select/send_gain", 'if', self.select_send_gain_callback)
         self.OSCReceiver.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
         self.OSCReceiver.add_method("/strip/sends", None, self.sends_query_callback)
-
-        #TODO add send callbacks
+        self.OSCReceiver.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
         self.OSCReceiver.add_method(None, None, self.fallback)
 
     def start(self):
@@ -310,6 +316,14 @@ class OSCServer(GObject.GObject):
         i = int(args[0])
         GObject.idle_add(self.emit, 'select_trimdB_automation_changed', i)
 
+    def select_pan_position_automation_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_pan_position_automation_changed', i)
+
+    def select_pan_width_automation_callback(self, path, args):
+        i = int(args[0])
+        GObject.idle_add(self.emit, 'select_pan_width_automation_changed', i)
+
     def select_send_name_callback(self, path, args):
         i, name = args
         GObject.idle_add(self.emit, 'select_send_name_changed', i, name)
@@ -333,6 +347,12 @@ class OSCServer(GObject.GObject):
             send_ID = int(args[3 + (i * 5)])
             GObject.idle_add(self.emit, 'send_reply_bus', strip_ssid, bus_name, send_ID)
         GObject.idle_add(self.emit, 'send_reply_end')
+
+    def select_pan_type_callback (self, path, args):
+        bPannerHasWidthControl = False
+        if args[0] == 'panner_2in2out':
+            bPannerHasWidthControl = True
+        GObject.idle_add(self.emit, 'select_panner_must_have_width_control_changed', bPannerHasWidthControl)
 
     def fallback(self, path, args, types, src):
         str_types = ""

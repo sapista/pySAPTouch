@@ -26,6 +26,7 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
 
         self.sendID = None
         self.automation_mode = AutomationModes.NOT_SET
+        self.bPannerHasWidthControl = True
         self.isSend = isSend
         self.vbox = Gtk.VBox()
         self.lbl_title = Gtk.Label()
@@ -123,6 +124,16 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
         if self.pannerWidget is not None:
             self.pannerWidget.set_width(value)
 
+    def set_panner_has_width_control(self, value):
+        if self.pannerWidget is not None:
+            self.bPannerHasWidthControl = value
+            if not self.bPannerHasWidthControl:
+                self.set_panner_width(0.5)
+                self.lbl_pan_width.set_markup("<span weight='bold' font_desc='Arial 14'>-</span>")
+            else:
+                self.lbl_pan_width.set_markup("<span weight='bold' font_desc='Arial 14'>Width</span>")
+
+
     def set_sendID(self, ID):
         if self.isSend:
             self.sendID = ID
@@ -153,6 +164,9 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
 
     def get_automation_mode(self):
         return self.automation_mode.value
+
+    def get_panner_has_width_control(self):
+        return  self.bPannerHasWidthControl
 
     def set_send_active(self, active):
         self.btn_Active.set_active_state(active)

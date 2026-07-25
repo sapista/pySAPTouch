@@ -134,7 +134,7 @@ class BankAvrController(GObject.GObject):
         self.emit('pan_pos_single_mode_untouched')
         self.emit('pan_width_single_mode_untouched')
         for i in range(0, 4):
-            self.emit('send_single_mode_untouched', i) #TODO this is throwing errors
+            self.emit('send_single_mode_untouched', i)
 
 
     def get_state(self):

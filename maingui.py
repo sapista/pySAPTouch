@@ -151,12 +151,9 @@ class ControllerGUI(Gtk.Window):
 
     def pan_pos_single_mode_changed(self, event, value):
         # TODO enable touch automation when available in Ardour
-
-        #TODO tha PAN control seams to be wrong, autmation failing, wide control on mono channels! revise!
-
         # liblo.send(self.target, "/select/pan_stereo_position/touch", 1)
 
-        # Prefer center point (0.5)
+        # Make the fader sticky to the center point (0.5)
         corrected_pan_val = value
         dist_2_center = abs(corrected_pan_val - 0.5)
         if dist_2_center < 0.05:
@@ -171,25 +168,26 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def pan_width_single_mode_changed(self, event, value):
-        # TODO enable touch automation when available in Ardour
-        # liblo.send(self.target, "/select/pan_stereo_width/touch", 1)
+        if self.ePanner.get_panner_has_width_control():
+            # TODO enable touch automation when available in Ardour
+            # liblo.send(self.target, "/select/pan_stereo_width/touch", 1)
 
-        #Prefer center point (0.5)
-        corrected_pan_val = value
-        dist_2_center = abs(corrected_pan_val - 0.5)
-        if dist_2_center < 0.05:
-            corrected_pan_val = 0.5
+            #Prefer center point (0.5)
+            corrected_pan_val = value
+            dist_2_center = abs(corrected_pan_val - 0.5)
+            if dist_2_center < 0.05:
+                corrected_pan_val = 0.5
 
-        #TODO I believe this is an ardour bug but pan must be sent between -1 and 1
-        corrected_pan_val = corrected_pan_val * 2.0 - 1.0
+            #TODO I believe this is an ardour bug but pan must be sent between -1 and 1
+            corrected_pan_val = corrected_pan_val * 2.0 - 1.0
 
-        #TODO do not send width for mono strips!!!! Also force with to stay fix for mono strips in their pan widget
-        liblo.send(self.target, "/select/pan_stereo_width", corrected_pan_val)
+            liblo.send(self.target, "/select/pan_stereo_width", corrected_pan_val)
         return True
 
     def pan_width_single_mode_untouched(self, event):
-        # TODO enable touch automation when available in Ardour
-        # liblo.send(self.target, "/select/pan_stereo_width/touch", 0)
+        #if self.ePanner.get_panner_has_width_control():
+            # TODO enable touch automation when available in Ardour
+            # liblo.send(self.target, "/select/pan_stereo_width/touch", 0)
         return True
 
     def send_single_mode_changed(self, event, channel, value):
@@ -472,6 +470,10 @@ class ControllerGUI(Gtk.Window):
     def edit_fader_automation_changed(self, widget, value):
         liblo.send(self.target, "/select/fader/automation", value)
 
+    def edit_panner_automation_changed(self, widget, value):
+        liblo.send(self.target, "/select/pan_stereo_position/automation", value)
+        liblo.send(self.target, "/select/pan_stereo_width/automation", value)
+
     def edit_send_active_changed(self, widget, sendID, value):
         liblo.send(self.target, "/select/send_enable", sendID, int(value))
 
@@ -528,11 +530,24 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.move_single_pan_width(value)
         self.ePanner.set_panner_width(value)
 
+    def select_panner_width_control_osc_changed(self, widget, value):
+        self.ePanner.set_panner_has_width_control(value)
+        if not value:
+            self.faderCtl.move_single_pan_width(0) #Force fader to zero to disable width control
+
     def select_trimdB_automation_osc_changed(self, widget, value):
         self.eTrimCtl.set_automation_mode(value)
 
     def select_fader_automation_osc_changed(self, widget, value):
         self.eFaderCtl.set_automation_mode(value)
+
+    def select_pan_position_automation_osc_changed(self, widget, value):
+        self.ePanner.set_automation_mode(value)
+
+    def select_pan_width_automation_osc_changed(self, widget, value):
+        #I prepared the signal but automation is linked in Ardour 8.12 to the position...
+        # so I only have a single set of automation mode buttons for the whole panner widget
+        self.ePanner.set_automation_mode(value)
 
     def select_send_name_osc_changed(self, widget, send_id, send_name):
         self.sends_table.set_strip_name(send_id, send_name)
@@ -572,9 +587,6 @@ class ControllerGUI(Gtk.Window):
     #Safe select to handle state of stereo panners properly and unificate all calls to /strip/select
     def safe_strip_select(self, ssid):
         if self.strip_table_tracks.check_if_ssid_exists(ssid):
-            if self.strip_table_tracks.get_current_selected_strip_ssid() != ssid:
-                self.ePanner.set_panner_width(1.0) #If selected channel changed start assuiming full stereo width since mono and balance mode do not feedback this command
-                self.faderCtl.move_single_pan_width(1.0) #set fader width at center
             liblo.send(self.target, "/strip/select", ssid, 0) #TODO I must send a zero not a 1 to select! this must be a bug in Ardour (8.12)!
 
         elif self.strip_table_VCA.check_if_ssid_exists(ssid):
@@ -1000,6 +1012,7 @@ class ControllerGUI(Gtk.Window):
         #Panner
         self.ePanner = selectFaderCtlWidget.SelectFaderCtlWidget("Stereo Panner", True)
         self.table_bank_edit.attach(self.ePanner, 2, 0, 2, 1)
+        self.ePanner.connect("automation_changed", self.edit_panner_automation_changed)
 
         #Sends
         self.eSendsCtl = []
@@ -1042,8 +1055,11 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_fader_gain_changed", self.select_fader_gain_osc_changed)
         self.oscserver.connect("select_pan_pos_changed", self.select_panPos_osc_changed)
         self.oscserver.connect("select_pan_width_changed", self.select_panWidth_osc_changed)
+        self.oscserver.connect("select_panner_must_have_width_control_changed", self.select_panner_width_control_osc_changed)
         self.oscserver.connect("select_trimdB_automation_changed", self.select_trimdB_automation_osc_changed)
         self.oscserver.connect("select_fader_automation_changed", self.select_fader_automation_osc_changed)
+        self.oscserver.connect("select_pan_position_automation_changed", self.select_pan_position_automation_osc_changed)
+        self.oscserver.connect("select_pan_width_automation_changed", self.select_pan_width_automation_osc_changed)
         self.oscserver.connect("select_send_name_changed", self.select_send_name_osc_changed)
         self.oscserver.connect("select_send_enable_changed", self.select_send_enable_osc_changed)
         self.oscserver.connect("select_send_fader_changed", self.select_send_fader_osc_changed)
