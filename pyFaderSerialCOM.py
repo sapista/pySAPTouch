@@ -120,6 +120,7 @@ class FaderCOM(GObject.GObject):
                 # we got an encoder message
                 value = int(self.RX_packet[1] & 0x7F) | int((self.RX_packet[0] & 0x1) << 7);
                 value = int.from_bytes(value.to_bytes(1, byteorder='big', signed=False), byteorder='big', signed=True)
+                #print("DBG: Encoder val = %f", float(value))
                 GLib.idle_add(self.emit, 'encoder_changed', float(value)) #Emit with to float conversion
             else:
                 # we got a untouch/buttons/Leds message

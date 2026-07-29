@@ -1,3 +1,4 @@
+#include <stdint.h>
 /*
  * main.c
  *
@@ -21,62 +22,46 @@
 #include "fader.h"
 #include "raspSerial.h"
 
-#define ENCODER_THRESHOLD 8 //Minimum encoder increment to filter out bouncing artefacts
-#define REVERSE_ENCODER //Define this to reverse the encoder wiring
+//#define ENCODER_THRESHOLD 8 //Minimum encoder increment to filter out bouncing artefacts //TODO remove this
+//#define REVERSE_ENCODER //Define this to reverse the encoder wiring
 volatile int8_t encoder_value = 0;
 
-//INT0 interrupt used for encoder
-ISR(INT0_vect )
-{
-	if(!bit_is_clear(PIND, PD1))
-	{
-#ifdef REVERSE_ENCODER
-		encoder_value++;
-		//printf("+");
-#else
-		encoder_value--;
-#endif
-	}
-	else
-	{
-#ifdef REVERSE_ENCODER
-		encoder_value--;
-		//printf("-");
-#else
-		encoder_value++;
-#endif
-	}
+#define TX_TICK_MAX 150 //Ticks max in ms for the throttling of serial TX 
 
-	encoder_value = encoder_value > 100 ? 100 : encoder_value; //100 to ensure to saturate at 8 bits (sign bit + 7 data bits)
-	encoder_value = encoder_value < -100 ? -100 : encoder_value; //-100 to ensure to saturate at 8 bits (sign bit + 7 data bits)
+//INT0 interrupt used for encoder
+ISR(INT0_vect)
+{
+    // Read state of PD1
+    uint8_t pd1_state = PIND & (1 << PD1);
+
+#ifdef REVERSE_ENCODER
+    if (pd1_state) encoder_value++; else encoder_value--;
+#else
+    if (pd1_state) encoder_value--; else encoder_value++;
+#endif
+
+    // Clamping to signed -100 to +100 bounds
+    if (encoder_value > 100)  encoder_value = 100;
+    if (encoder_value < -100) encoder_value = -100;
 }
 
 //INT1 interrupt used for encoder
-ISR(INT1_vect )
+ISR(INT1_vect)
 {
-	if(!bit_is_clear(PIND, PD0))
-	{
-#ifdef REVERSE_ENCODER
-		encoder_value++;
-		//printf("+");
-#else
-		encoder_value--;
-#endif
-	}
-	else
-	{
-#ifdef REVERSE_ENCODER
-		encoder_value--;
-		//printf("-");
-#else
-		encoder_value++;
-#endif
-	}
+    // Read state of PD0
+    uint8_t pd0_state = PIND & (1 << PD0);
 
-	encoder_value = encoder_value > 100 ? 100 : encoder_value; //100 to ensure to saturate at 8 bits (sign bit + 7 data bits)
-	encoder_value = encoder_value < -100 ? -100 : encoder_value; //-100 to ensure to saturate at 8 bits (sign bit + 7 data bits)
+    // Reversed condition relative to INT0 for proper quadrature tracking
+#ifdef REVERSE_ENCODER
+    if (!pd0_state) encoder_value++; else encoder_value--;
+#else
+    if (!pd0_state) encoder_value--; else encoder_value++;
+#endif
+
+    // Clamping to signed -100 to +100 bounds
+    if (encoder_value > 100)  encoder_value = 100;
+    if (encoder_value < -100) encoder_value = -100;
 }
-
 
 
 int main()
@@ -85,9 +70,9 @@ int main()
 
 
 	// Config and init UART
-    uart_init();
-    stdout = &uart_output;
-    stdin = &uart_input;
+  uart_init();
+  stdout = &uart_output;
+  stdin = &uart_input;
 
     //Fader Vars
 	uint16_t _targets[NUM_OF_FADERS];
@@ -109,9 +94,9 @@ int main()
 	picom_add_setFaderValueCallback(picom, setFaderTarget);
 
 	//Encoder initialization
-	DDRD &=~ (1 << PD0);				// PD2 and PD3 as input
+	DDRD &=~ (1 << PD0);				// PD0 and PD1 as input
 	DDRD &=~ (1 << PD1);
-	PORTD |= (1 << PD0)|(1 << PD1);   // PD0 and PD1 pull-up enabled
+	//PORTD |= (1 << PD0)|(1 << PD1);   // PD0 and PD1 pull-up enabled #TODO remove
 
 	EIMSK |= (1<<INT0)|(1<<INT1);		// enable INT0 and INT1
 	EICRA |= (1<<ISC01)|(1<<ISC11)|(1<<ISC10); // INT0 - falling edge, INT1 - reising
@@ -121,8 +106,10 @@ int main()
 	//Global Interrupts enable
 	sei();
 
+	//Global counter for serial TX
+	uint8_t tx_tick_count = 0;
 
-    while(1)
+  while(1)
 	{
 /*DEBUG prints
 		PORTF |= (1<<PF0); //LED on
@@ -152,57 +139,86 @@ int main()
 		//Process incoming queue
 		picom_process_RX_queue(picom);
 
-		//Check for encoder changes to send
-		if( encoder_value > ENCODER_THRESHOLD)
+		//Delay to throttle down the serial com
+		_delay_ms(1);
+
+		if(tx_tick_count > TX_TICK_MAX)
 		{
+			//Reset tick couneter
+			tx_tick_count = 0;
+
+			//Check for encoder changes to send
 			ATOMIC_BLOCK(ATOMIC_FORCEON)
 			{
-				picom_TXqueue_append_EncoderValue(picom, encoder_value - ENCODER_THRESHOLD);
+				picom_TXqueue_append_EncoderValue(picom, encoder_value);
 				encoder_value = 0;
 			}
 			picom_process_TX_queue(picom); //Try to send at least the first byte
-		}
+			
 
-		else if( encoder_value < -ENCODER_THRESHOLD )
-		{
+			//TODO remove
+			/*
+			int8_t local_encoder_val;
 			ATOMIC_BLOCK(ATOMIC_FORCEON)
 			{
-				picom_TXqueue_append_EncoderValue(picom, encoder_value + ENCODER_THRESHOLD);
-				encoder_value = 0;
+				local_encoder_val = encoder_value;
 			}
-			picom_process_TX_queue(picom); //Try to send at least the first byte
-		}
 
-		//Check for fader changes to send
-		uint8_t fader_changed = getFaderChanged();
-		uint8_t faderTouched = getTouchedFader();
-		uint8_t fader_UnTouchFlags = 0;
-		for( uint8_t i = 0; i < NUM_OF_FADERS; i++)
-		{
-			 //Check if current fader has data to send
-			if(fader_changed & (1<<i))
+			
+			if( local_encoder_val > ENCODER_THRESHOLD)
 			{
-				picom_TXqueue_append_faderValue(picom, i, getFaderPosition(i));
-				acknowledgeFaderChanged(i); //Avoid re-sending the same data by clearing the change state
+				picom_TXqueue_append_EncoderValue(picom, local_encoder_val - ENCODER_THRESHOLD);
+				ATOMIC_BLOCK(ATOMIC_FORCEON)
+				{
+					encoder_value = 0;
+				}
 				picom_process_TX_queue(picom); //Try to send at least the first byte
 			}
 
-			 //Check if current fader has been untouched
-			if( (faderTouched_ant & (1<<i)) && !(faderTouched & (1<<i)) )
+			if( local_encoder_val < -ENCODER_THRESHOLD )
 			{
-				//Fader untouched event
-				fader_UnTouchFlags |= (1<<i);
+				picom_TXqueue_append_EncoderValue(picom, local_encoder_val + ENCODER_THRESHOLD);
+				ATOMIC_BLOCK(ATOMIC_FORCEON)
+				{
+					encoder_value = 0;
+				}
+				picom_process_TX_queue(picom); //Try to send at least the first byte
 			}
-		}
+			*/
 
-		if(fader_UnTouchFlags)
-		{
-			picom_TXqueue_append_faderUntouched(picom, fader_UnTouchFlags);
-			picom_process_TX_queue(picom);
-		}
+			//Check for fader changes to send
+			uint8_t fader_changed = getFaderChanged();
+			uint8_t faderTouched = getTouchedFader();
+			uint8_t fader_UnTouchFlags = 0;
+			for( uint8_t i = 0; i < NUM_OF_FADERS; i++)
+			{
+				//Check if current fader has data to send
+				if(fader_changed & (1<<i))
+				{
+					picom_TXqueue_append_faderValue(picom, i, getFaderPosition(i));
+					acknowledgeFaderChanged(i); //Avoid re-sending the same data by clearing the change state
+					picom_process_TX_queue(picom); //Try to send at least the first byte
+				}
 
-		picom_process_TX_queue(picom); //Ensure second byte is sent
-		faderTouched_ant = faderTouched; //Update fader touch ant
+				//Check if current fader has been untouched
+				if( (faderTouched_ant & (1<<i)) && !(faderTouched & (1<<i)) )
+				{
+					//Fader untouched event
+					fader_UnTouchFlags |= (1<<i);
+				}
+			}
+
+			if(fader_UnTouchFlags)
+			{
+				picom_TXqueue_append_faderUntouched(picom, fader_UnTouchFlags);
+				picom_process_TX_queue(picom);
+			}
+
+			picom_process_TX_queue(picom); //Ensure second byte is sent
+			faderTouched_ant = faderTouched; //Update fader touch ant
+		}
+		
+		tx_tick_count++;
 	}
 
 	return 0;

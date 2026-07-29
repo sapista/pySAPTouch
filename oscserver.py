@@ -187,7 +187,9 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
         self.OSCReceiver.add_method("/strip/sends", None, self.sends_query_callback)
         self.OSCReceiver.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
-        self.OSCReceiver.add_method(None, None, self.fallback)
+
+        #Ucomment only for debugging
+        #self.OSCReceiver.add_method(None, None, self.fallback)
 
     def start(self):
         self.OSCReceiver.start()

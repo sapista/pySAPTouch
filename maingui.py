@@ -93,25 +93,85 @@ class ControllerGUI(Gtk.Window):
         else:
             self.bLooping = True
 
+    def on_jog_mode_changed(self, combo_box):
+        self.jog_mode = self.CB_JogWheel_mode.get_active_text()
+        jog_id = -1
+        if self.jog_mode == "Jog":
+            jog_id = 0
+        elif self.jog_mode == "Shuttle":
+            jog_id = 3 #Set to this mode but its actualy not used
+        elif self.jog_mode == "Scroll":
+            jog_id = 5
+
+        if jog_id is not -1:
+            liblo.send(self.target, "/jog/mode", jog_id)
+            liblo.send(self.target, "/transport_stop")
+
     def on_encoder_incremented(self, event, value):
-        jog_mode = self.CB_JogWheel_mode.get_active_text()
-        if jog_mode == "Jog":
-            liblo.send(self.target, "/jog/mode", 0)
+        #jog_mode = self.CB_JogWheel_mode.get_active_text()
+
+        if abs(value) < 1:
+            return
+
+        print("DBG Enc: '%d'" % (value))
+        return
+
+        if self.jog_mode == "Jog":
+            #liblo.send(self.target, "/jog/mode", 0) #TODO at init ensure jog mode is at the right state
             liblo.send(self.target, "/jog", value*0.2)
-        elif jog_mode == "Scrub":
-            liblo.send(self.target, "/jog/mode", 2)
-            liblo.send(self.target, "/jog", value*0.1)
-        elif jog_mode == "Scroll":
-            liblo.send(self.target, "/jog/mode", 5)
+
+        elif self.jog_mode == "Shuttle":
+            tspeed =  value*0.3
+            if tspeed > 1.0: tspeed = 1.0
+            if tspeed < -1.0: tspeed = -1.0
+            liblo.send(self.target, "/set_transport_speed", tspeed)
+
+            #TODO im here. jog wheel is a mes because the MCU is provideing random ticks.
+            # --> Instead I suggest to fix this at MCU Level by measuring the rotation speed continuously
+            # --> Use a spare timmer to define a stable time-window
+            # --> Count with INT0 and INT1  ISR an then use the timmer overflow ISR to calculate the speed.
+            # --> Store the speed in a volatile variable
+            # --> From the main loop: TX the speed periodically
+            # --> Then, this callback will be executed as a timmer! So often and:
+            #    ---> Speed close to zero whil mean stop the transport (so I will not need the pyGTK timmer)
+            #    ---> Speed positive/negative determine the ticks to send to Ardour
+
+            #liblo.send(self.target, "/scrub", value*0.5)
+
+            #if value > 0:
+                #liblo.send(self.target, "/jog", 1)
+                #liblo.send(self.target, "/scrub", 1)
+            #else:
+                #liblo.send(self.target, "/jog", -1)
+                #liblo.send(self.target, "/scrub", -1)
+
+            # Cancel the existing GTK timer if the wheel is still spinning
+            if self.JogWheel_timer_id is not None:
+                GLib.source_remove(self.JogWheel_timer_id)
+                self.JogWheel_timer_id = None
+
+            # Schedule encoder_send_jog_stop to trigger after encoder inactivity
+            self.JogWheel_timer_id = GLib.timeout_add(500, self.encoder_send_jog_stop)
+
+        elif self.jog_mode == "Scroll":
             if value > 0:
                 liblo.send(self.target, "/jog", 1)
             else:
                 liblo.send(self.target, "/jog", -1)
-        elif jog_mode == "R.Gain":
+
+        elif self.jog_mode == "R.Gain":
             if value > 0:
                 liblo.send(self.target, "/access_action/Region/boost-region-gain")
             else:
                 liblo.send(self.target, "/access_action/Region/cut-region-gain")
+
+    def encoder_send_jog_stop(self):
+        liblo.send(self.target, "/set_transport_speed", 1.0)
+        liblo.send(self.target, "/transport_stop")
+        self.JogWheel_timer_id = None
+
+        # Return False so GTK knows to run this callback ONLY ONCE
+        return False
 
     def fader_bank_mode_changed(self, event, channel, value):
         if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW
@@ -739,16 +799,21 @@ class ControllerGUI(Gtk.Window):
         self.headerBar.pack_end(self.btn_solo_cancel)
 
         # Jog-Wheel mode selector
+        self.jog_mode = "Jog"
         self.CB_JogWheel_mode = Gtk.ComboBoxText()
         self.CB_JogWheel_mode.append_text("Jog")
-        self.CB_JogWheel_mode.append_text("Scrub")
+        self.CB_JogWheel_mode.append_text("Shuttle")
         self.CB_JogWheel_mode.append_text("Scroll")
         self.CB_JogWheel_mode.append_text("R.Gain")
         self.CB_JogWheel_mode.set_active(0)
+        self.CB_JogWheel_mode.connect("changed", self.on_jog_mode_changed)
         self.headerBar.pack_end(self.CB_JogWheel_mode)
         lbl_wheelMode = Gtk.Label()
         lbl_wheelMode.set_markup("<span size='medium' color='white'>Wheel\nmode:</span>")
         self.headerBar.pack_end(lbl_wheelMode)
+
+        # Jog-Wheel off timer
+        self.JogWheel_timer_id = None
 
         # Session save button
         self.btn_session_save = Gtk.Button()

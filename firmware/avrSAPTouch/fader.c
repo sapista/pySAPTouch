@@ -287,13 +287,13 @@ ISR(ADC_vect)
 	ADMUX |= adcCh_next;
 
 	//Update fader timeout
-	timeouts[adcCh] = timeouts[adcCh] >= FADER_MOTORON_TIMEOUT ? FADER_MOTORON_TIMEOUT : timeouts[adcCh]+1;
+	if (timeouts[adcCh] < FADER_MOTORON_TIMEOUT) timeouts[adcCh]++;
 
 	//Limits for Faders position
-	ftarget[adcCh] = ftarget[adcCh] > UP_LIMIT ? UP_LIMIT : ftarget[adcCh];
-	ftarget[adcCh] = ftarget[adcCh] < DOWN_LIMIT ? DOWN_LIMIT : ftarget[adcCh];
-
-    //PID controller and refresh touched fader value
+	if (ftarget[adcCh] > UP_LIMIT) ftarget[adcCh] = UP_LIMIT;
+	if (ftarget[adcCh] < DOWN_LIMIT) ftarget[adcCh] = DOWN_LIMIT;
+	
+  //PID controller and refresh touched fader value
 	int16_t pError = ftarget[adcCh] - adcValue;
 	if( (pError > FADER_DEADBAND || pError < -FADER_DEADBAND)  )
 	{
@@ -305,15 +305,22 @@ ISR(ADC_vect)
 		}
 
 		//P controller
-		duty = timeouts[adcCh] < FADER_MOTORON_TIMEOUT ?  P_CONTROLLER * pError : 0;
-		
+		if(timeouts[adcCh] < FADER_MOTORON_TIMEOUT)
+		{
+			duty = P_CONTROLLER * pError;
+		}
+		else
+		{
+			duty = 0;
+		}
+				
 		//Duty limits low
-		duty = duty < DUTY_LIMIT_LOW && duty > 0 ? DUTY_LIMIT_LOW : duty;
-		duty = duty > -DUTY_LIMIT_LOW && duty < 0 ? -DUTY_LIMIT_LOW : duty;
-
+		if(duty < DUTY_LIMIT_LOW && duty > 0) duty = DUTY_LIMIT_LOW;
+		if(duty > -DUTY_LIMIT_LOW && duty < 0) duty = -DUTY_LIMIT_LOW;
+		
 		//Duty limits high
-		duty = duty > DUTY_LIMIT_HIGH ? DUTY_LIMIT_HIGH : duty;
-		duty = duty < -DUTY_LIMIT_HIGH ? -DUTY_LIMIT_HIGH : duty;
+		if(duty > DUTY_LIMIT_HIGH) duty = DUTY_LIMIT_HIGH;
+		if(duty < -DUTY_LIMIT_HIGH) duty = -DUTY_LIMIT_HIGH;
 	}
 
 	//Set duty to OCR registers using 9-bits encoding thus... 511
