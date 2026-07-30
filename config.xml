@@ -11,6 +11,11 @@
         <fader_min>50</fader_min>
         <fader_max>1000</fader_max>
     </avr_com>
+    <encoder>
+        <reverse_dir>True</reverse_dir>
+        <acceleration>0.02</acceleration>
+        <ticks_for_marker>4</ticks_for_marker>
+    </encoder>
     <misc>
         <window_width>1280</window_width>
         <window_height>750</window_height>
@@ -18,7 +23,7 @@
         <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
     <debug>
-        <log_invalid_messages>True</log_invalid_messages>
+        <log_invalid_messages>False</log_invalid_messages>
     </debug>
 </config>
 

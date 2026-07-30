@@ -21,6 +21,7 @@ import bankAvrController
 import selectFaderCtlWidget
 import stripTable
 import stripTypes
+import time
 
 """ ControllerGUI class
 This class implements a gtk GUI for sending osc messages using the liblo.send() method.
@@ -98,8 +99,9 @@ class ControllerGUI(Gtk.Window):
         jog_id = -1
         if self.jog_mode == "Jog":
             jog_id = 0
-        elif self.jog_mode == "Shuttle":
-            jog_id = 3 #Set to this mode but its actualy not used
+        elif self.jog_mode == "Marker":
+            jog_id = 4
+            self.encoder_ticks_marker_counter = 0
         elif self.jog_mode == "Scroll":
             jog_id = 5
 
@@ -108,42 +110,36 @@ class ControllerGUI(Gtk.Window):
             liblo.send(self.target, "/transport_stop")
 
     def on_encoder_incremented(self, event, value):
-        #jog_mode = self.CB_JogWheel_mode.get_active_text()
+        if self.encoder_reverse: value = -value
 
-        if abs(value) < 1:
-            return
+        #Measure time elapsed between encoder ticks
+        encoder_current_time = time.monotonic()
+        encoder_elapsed = (encoder_current_time - self.encoder_last_time)
+        self.encoder_last_time = encoder_current_time
 
-        print("DBG Enc: '%d'" % (value))
-        return
+        #Calculate encoder speed ( a.k.a. tick rate)
+        encoder_current_speed = value / encoder_elapsed # Ticks/Second
+
+        #Do not allow to fast speed changes, some dynamics
+        self.encoder_speed = 0.6*self.encoder_speed + 0.4*encoder_current_speed
+
+         #Limit speed:
+        if self.encoder_speed  > 100: self.encoder_speed  = 100
+        if self.encoder_speed  < -100: self.encoder_speed  = -100
+
+        #print(f"DBG Enc: '{value}' elapsed: '{encoder_elapsed}' tick_rate_CURR: '{encoder_current_speed}' tick_rate_AVG: '{self.encoder_speed}'")
+        #return
 
         if self.jog_mode == "Jog":
-            #liblo.send(self.target, "/jog/mode", 0) #TODO at init ensure jog mode is at the right state
-            liblo.send(self.target, "/jog", value*0.2)
+            liblo.send(self.target, "/jog", self.encoder_speed * self.encoder_accel)
 
         elif self.jog_mode == "Shuttle":
-            tspeed =  value*0.3
+            tspeed =  self.encoder_speed * self.encoder_accel * 1.5
+            if tspeed < 0.4 and tspeed > 0: tspeed = 0.4
+            if tspeed > -0.4 and tspeed < 0: tspeed = -0.4
             if tspeed > 1.0: tspeed = 1.0
             if tspeed < -1.0: tspeed = -1.0
-            liblo.send(self.target, "/set_transport_speed", tspeed)
-
-            #TODO im here. jog wheel is a mes because the MCU is provideing random ticks.
-            # --> Instead I suggest to fix this at MCU Level by measuring the rotation speed continuously
-            # --> Use a spare timmer to define a stable time-window
-            # --> Count with INT0 and INT1  ISR an then use the timmer overflow ISR to calculate the speed.
-            # --> Store the speed in a volatile variable
-            # --> From the main loop: TX the speed periodically
-            # --> Then, this callback will be executed as a timmer! So often and:
-            #    ---> Speed close to zero whil mean stop the transport (so I will not need the pyGTK timmer)
-            #    ---> Speed positive/negative determine the ticks to send to Ardour
-
-            #liblo.send(self.target, "/scrub", value*0.5)
-
-            #if value > 0:
-                #liblo.send(self.target, "/jog", 1)
-                #liblo.send(self.target, "/scrub", 1)
-            #else:
-                #liblo.send(self.target, "/jog", -1)
-                #liblo.send(self.target, "/scrub", -1)
+            self.send_throttled_speed(tspeed)
 
             # Cancel the existing GTK timer if the wheel is still spinning
             if self.JogWheel_timer_id is not None:
@@ -151,13 +147,21 @@ class ControllerGUI(Gtk.Window):
                 self.JogWheel_timer_id = None
 
             # Schedule encoder_send_jog_stop to trigger after encoder inactivity
-            self.JogWheel_timer_id = GLib.timeout_add(500, self.encoder_send_jog_stop)
+            self.JogWheel_timer_id = GLib.timeout_add(300, self.encoder_send_jog_stop)
 
         elif self.jog_mode == "Scroll":
-            if value > 0:
+            liblo.send(self.target, "/jog", self.encoder_speed * self.encoder_accel)
+
+        elif self.jog_mode == "Marker":
+            self.encoder_ticks_marker_counter = self.encoder_ticks_marker_counter + value
+
+            if self.encoder_ticks_marker_counter >= self.encoder_ticks_for_marker:
                 liblo.send(self.target, "/jog", 1)
-            else:
+                self.encoder_ticks_marker_counter = 0
+
+            if self.encoder_ticks_marker_counter <= -self.encoder_ticks_for_marker:
                 liblo.send(self.target, "/jog", -1)
+                self.encoder_ticks_marker_counter = 0
 
         elif self.jog_mode == "R.Gain":
             if value > 0:
@@ -166,12 +170,17 @@ class ControllerGUI(Gtk.Window):
                 liblo.send(self.target, "/access_action/Region/cut-region-gain")
 
     def encoder_send_jog_stop(self):
-        liblo.send(self.target, "/set_transport_speed", 1.0)
         liblo.send(self.target, "/transport_stop")
         self.JogWheel_timer_id = None
+        self.encoder_speed = 0.0
+        self.last_encoder_speed_time = time.monotonic() #Avoid sending other OSC speed commands to soon
+        return False  # Return False so GTK knows to run this callback ONLY ONCE
 
-        # Return False so GTK knows to run this callback ONLY ONCE
-        return False
+    def send_throttled_speed(self, speed):
+        current_time = time.monotonic()
+        if (current_time - self.last_encoder_speed_time >= 0.020):
+            liblo.send(self.target, "/set_transport_speed", speed)
+            self.last_encoder_speed_time = current_time
 
     def fader_bank_mode_changed(self, event, channel, value):
         if self.strip_table_tracks.get_number_of_strips() > 0:  # Only if we have strip list from DAW
@@ -799,13 +808,14 @@ class ControllerGUI(Gtk.Window):
         self.headerBar.pack_end(self.btn_solo_cancel)
 
         # Jog-Wheel mode selector
-        self.jog_mode = "Jog"
+        self.jog_mode = "" #Init with no mode selected
         self.CB_JogWheel_mode = Gtk.ComboBoxText()
         self.CB_JogWheel_mode.append_text("Jog")
         self.CB_JogWheel_mode.append_text("Shuttle")
         self.CB_JogWheel_mode.append_text("Scroll")
         self.CB_JogWheel_mode.append_text("R.Gain")
-        self.CB_JogWheel_mode.set_active(0)
+        self.CB_JogWheel_mode.append_text("Marker")
+        self.CB_JogWheel_mode.set_active(-1)
         self.CB_JogWheel_mode.connect("changed", self.on_jog_mode_changed)
         self.headerBar.pack_end(self.CB_JogWheel_mode)
         lbl_wheelMode = Gtk.Label()
@@ -907,6 +917,20 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.connect("pan_width_single_mode_untouched", self.pan_width_single_mode_untouched)
         self.faderCtl.connect("send_single_mode_changed", self.send_single_mode_changed)
         self.faderCtl.connect("send_single_mode_untouched", self.send_single_mode_untouched)
+
+        # Measure time between encoder ticks and speed
+        self.encoder_last_time =  time.monotonic()
+        self.encoder_speed = 0.0
+        self.encoder_ticks_marker_counter = 0
+
+        # Vars for encoder throttling
+        self.last_encoder_speed_time = 0.0
+
+        #Load encoder config from XML
+        xml_encoder = root.find('encoder')
+        self.encoder_reverse = ast.literal_eval(xml_encoder.find('reverse_dir').text)
+        self.encoder_accel = ast.literal_eval(xml_encoder.find('acceleration').text)
+        self.encoder_ticks_for_marker = ast.literal_eval(xml_encoder.find('ticks_for_marker').text)
 
         self.connect("destroy", self.destroy)
         self.connect("delete_event", self.delete_event)

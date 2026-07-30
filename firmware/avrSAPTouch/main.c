@@ -23,45 +23,47 @@
 #include "raspSerial.h"
 
 //#define ENCODER_THRESHOLD 8 //Minimum encoder increment to filter out bouncing artefacts //TODO remove this
-//#define REVERSE_ENCODER //Define this to reverse the encoder wiring
-volatile int8_t encoder_value = 0;
 
 #define TX_TICK_MAX 150 //Ticks max in ms for the throttling of serial TX 
 
-//INT0 interrupt used for encoder
-ISR(INT0_vect)
-{
-    // Read state of PD1
-    uint8_t pd1_state = PIND & (1 << PD1);
+volatile int8_t encoder_detent_events = 0; // Increments of +1 or -1 sent to UART
 
-#ifdef REVERSE_ENCODER
-    if (pd1_state) encoder_value++; else encoder_value--;
-#else
-    if (pd1_state) encoder_value--; else encoder_value++;
-#endif
+static inline void handle_encoder_change(void) {
+    static int8_t store = 0;
+    static uint8_t prev_state = 0;
 
-    // Clamping to signed -100 to +100 bounds
-    if (encoder_value > 100)  encoder_value = 100;
-    if (encoder_value < -100) encoder_value = -100;
+    // 1. Read pins
+    uint8_t curr_state = (PIND & ((1 << PD0) | (1 << PD1))) >> PD0;
+    
+    // 2. State lookup table (-1, 0, +1)
+    static const int8_t valid_states[] = {
+         0, -1,  1,  0,
+         1,  0,  0, -1,
+        -1,  0,  0,  1,
+         0,  1, -1,  0
+    };
+
+    uint8_t index = (prev_state << 2) | curr_state;
+    int8_t step = valid_states[index];
+
+    if (step != 0) {
+        store += step;
+        prev_state = curr_state;
+
+        // 3. ONLY commit when we land back on the resting detent state (00)
+        if (curr_state == 0b00) {
+            if (store >= 4) {
+                encoder_detent_events++; // Full CW click completed
+            } else if (store <= -4) {
+                encoder_detent_events--; // Full CCW click completed
+            }
+            store = 0; // Reset accumulator for the next detent
+        }
+    }
 }
 
-//INT1 interrupt used for encoder
-ISR(INT1_vect)
-{
-    // Read state of PD0
-    uint8_t pd0_state = PIND & (1 << PD0);
-
-    // Reversed condition relative to INT0 for proper quadrature tracking
-#ifdef REVERSE_ENCODER
-    if (!pd0_state) encoder_value++; else encoder_value--;
-#else
-    if (!pd0_state) encoder_value--; else encoder_value++;
-#endif
-
-    // Clamping to signed -100 to +100 bounds
-    if (encoder_value > 100)  encoder_value = 100;
-    if (encoder_value < -100) encoder_value = -100;
-}
+ISR(INT0_vect) { handle_encoder_change(); }
+ISR(INT1_vect) { handle_encoder_change(); }
 
 
 int main()
@@ -99,15 +101,12 @@ int main()
 	//PORTD |= (1 << PD0)|(1 << PD1);   // PD0 and PD1 pull-up enabled #TODO remove
 
 	EIMSK |= (1<<INT0)|(1<<INT1);		// enable INT0 and INT1
-	EICRA |= (1<<ISC01)|(1<<ISC11)|(1<<ISC10); // INT0 - falling edge, INT1 - reising
+	EICRA |= (1<<ISC00)|(1<<ISC10); // Falling and reising edges
 
 	calibrateTouchSensors(); //always calibrate touch sensors at the start
 
 	//Global Interrupts enable
 	sei();
-
-	//Global counter for serial TX
-	uint8_t tx_tick_count = 0;
 
   while(1)
 	{
@@ -140,85 +139,52 @@ int main()
 		picom_process_RX_queue(picom);
 
 		//Delay to throttle down the serial com
-		_delay_ms(1);
+		_delay_ms(5);
 
-		if(tx_tick_count > TX_TICK_MAX)
+		//Check for encoder changes to send
+		uint8_t encoder_send_val;
+		ATOMIC_BLOCK(ATOMIC_FORCEON)
 		{
-			//Reset tick couneter
-			tx_tick_count = 0;
-
-			//Check for encoder changes to send
-			ATOMIC_BLOCK(ATOMIC_FORCEON)
-			{
-				picom_TXqueue_append_EncoderValue(picom, encoder_value);
-				encoder_value = 0;
-			}
-			picom_process_TX_queue(picom); //Try to send at least the first byte
-			
-
-			//TODO remove
-			/*
-			int8_t local_encoder_val;
-			ATOMIC_BLOCK(ATOMIC_FORCEON)
-			{
-				local_encoder_val = encoder_value;
-			}
-
-			
-			if( local_encoder_val > ENCODER_THRESHOLD)
-			{
-				picom_TXqueue_append_EncoderValue(picom, local_encoder_val - ENCODER_THRESHOLD);
-				ATOMIC_BLOCK(ATOMIC_FORCEON)
-				{
-					encoder_value = 0;
-				}
-				picom_process_TX_queue(picom); //Try to send at least the first byte
-			}
-
-			if( local_encoder_val < -ENCODER_THRESHOLD )
-			{
-				picom_TXqueue_append_EncoderValue(picom, local_encoder_val + ENCODER_THRESHOLD);
-				ATOMIC_BLOCK(ATOMIC_FORCEON)
-				{
-					encoder_value = 0;
-				}
-				picom_process_TX_queue(picom); //Try to send at least the first byte
-			}
-			*/
-
-			//Check for fader changes to send
-			uint8_t fader_changed = getFaderChanged();
-			uint8_t faderTouched = getTouchedFader();
-			uint8_t fader_UnTouchFlags = 0;
-			for( uint8_t i = 0; i < NUM_OF_FADERS; i++)
-			{
-				//Check if current fader has data to send
-				if(fader_changed & (1<<i))
-				{
-					picom_TXqueue_append_faderValue(picom, i, getFaderPosition(i));
-					acknowledgeFaderChanged(i); //Avoid re-sending the same data by clearing the change state
-					picom_process_TX_queue(picom); //Try to send at least the first byte
-				}
-
-				//Check if current fader has been untouched
-				if( (faderTouched_ant & (1<<i)) && !(faderTouched & (1<<i)) )
-				{
-					//Fader untouched event
-					fader_UnTouchFlags |= (1<<i);
-				}
-			}
-
-			if(fader_UnTouchFlags)
-			{
-				picom_TXqueue_append_faderUntouched(picom, fader_UnTouchFlags);
-				picom_process_TX_queue(picom);
-			}
-
-			picom_process_TX_queue(picom); //Ensure second byte is sent
-			faderTouched_ant = faderTouched; //Update fader touch ant
+			encoder_send_val = encoder_detent_events;
+			encoder_detent_events = 0;
 		}
-		
-		tx_tick_count++;
+
+		if(encoder_send_val != 0)
+		{
+			picom_TXqueue_append_EncoderValue(picom, encoder_send_val);
+			picom_process_TX_queue(picom); //Try to send at least the first byte
+		}
+
+		//Check for fader changes to send
+		uint8_t fader_changed = getFaderChanged();
+		uint8_t faderTouched = getTouchedFader();
+		uint8_t fader_UnTouchFlags = 0;
+		for( uint8_t i = 0; i < NUM_OF_FADERS; i++)
+		{
+			//Check if current fader has data to send
+			if(fader_changed & (1<<i))
+			{
+				picom_TXqueue_append_faderValue(picom, i, getFaderPosition(i));
+				acknowledgeFaderChanged(i); //Avoid re-sending the same data by clearing the change state
+				picom_process_TX_queue(picom); //Try to send at least the first byte
+			}
+
+			//Check if current fader has been untouched
+			if( (faderTouched_ant & (1<<i)) && !(faderTouched & (1<<i)) )
+			{
+				//Fader untouched event
+				fader_UnTouchFlags |= (1<<i);
+			}
+		}
+
+		if(fader_UnTouchFlags)
+		{
+			picom_TXqueue_append_faderUntouched(picom, fader_UnTouchFlags);
+			picom_process_TX_queue(picom);
+		}
+
+		picom_process_TX_queue(picom); //Ensure second byte is sent
+		faderTouched_ant = faderTouched; //Update fader touch ant
 	}
 
 	return 0;

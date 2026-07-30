@@ -13,6 +13,7 @@ This models ensures a thread-safe gtk signal generation for incoming osc message
 import stripselwidget
 import liblo
 import socket
+import time
 from gi.repository import GObject
 
 
@@ -187,14 +188,15 @@ class OSCServer(GObject.GObject):
         self.OSCReceiver.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
         self.OSCReceiver.add_method("/strip/sends", None, self.sends_query_callback)
         self.OSCReceiver.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
-
-        #Ucomment only for debugging
-        #self.OSCReceiver.add_method(None, None, self.fallback)
+        self.OSCReceiver.add_method(None, None, self.fallback)
 
     def start(self):
         self.OSCReceiver.start()
 
     def stop(self):
+        self.OSCReceiver.del_method(None, None)
+        self.OSCReceiver.del_method("/strip/meter", 'if')
+        time.sleep(0.1)
         self.OSCReceiver.stop()
 
     def fader_callback(self, path, args):
