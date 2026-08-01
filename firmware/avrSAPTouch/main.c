@@ -139,7 +139,7 @@ int main()
 		picom_process_RX_queue(picom);
 
 		//Delay to throttle down the serial com
-		_delay_ms(5);
+		//_delay_ms(5);
 
 		//Check for encoder changes to send
 		uint8_t encoder_send_val;

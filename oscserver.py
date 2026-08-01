@@ -13,9 +13,7 @@ This models ensures a thread-safe gtk signal generation for incoming osc message
 import stripselwidget
 import liblo
 import socket
-import time
 from gi.repository import GObject
-
 
 class OSCServer(GObject.GObject):
     __gsignals__ = {
@@ -137,6 +135,12 @@ class OSCServer(GObject.GObject):
         'send_reply_end': (GObject.SIGNAL_RUN_LAST, None,
                            ()),
 
+        'strip_name_changed': (GObject.SIGNAL_RUN_LAST, None,
+                                            (int, str)),
+
+        'osc_heartbeat_tick': (GObject.SIGNAL_RUN_LAST, None,
+                           ()),
+
         'unknown_message': (GObject.SIGNAL_RUN_LAST, None,
                             (str,))
 
@@ -151,52 +155,64 @@ class OSCServer(GObject.GObject):
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4194304) # 4 MB buffer
 
-        self.OSCReceiver.add_method("/strip/fader", 'if', self.fader_callback)
-        self.OSCReceiver.add_method("/strip/gain", 'if', self.fader_gain_callback)
-        self.OSCReceiver.add_method("/strip/solo", 'if', self.solo_callback)
-        self.OSCReceiver.add_method("/strip/mute", 'if', self.mute_callback)
-        self.OSCReceiver.add_method("/strip/recenable", 'if', self.rec_callback)
-        self.OSCReceiver.add_method("/strip/select", 'if', self.select_callback)
-        self.OSCReceiver.add_method("/strip/meter", 'if', self.meter_callback)
-        self.OSCReceiver.add_method("/reply", 'ssiiiiii', self.reply_callback_Track)
-        self.OSCReceiver.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
-        self.OSCReceiver.add_method("/reply", 'shhi', self.reply_callback_EndRoute)
-        self.OSCReceiver.add_method("/position/smpte", 's', self.smpte_position_callback)
-        self.OSCReceiver.add_method("/select/name", 's', self.select_name_callback)
-        self.OSCReceiver.add_method("/select/polarity", 'i', self.select_phase_callback)
-        self.OSCReceiver.add_method("/select/recenable", 'i', self.select_rec_callback)
-        self.OSCReceiver.add_method("/select/mute", 'i', self.select_mute_callback)
-        self.OSCReceiver.add_method("/select/solo", 'i', self.select_solo_callback)
-        self.OSCReceiver.add_method("/select/solo_iso", 'i', self.select_soloIso_callback)
-        self.OSCReceiver.add_method("/select/solo_safe", 'i', self.select_soloLock_callback)
-        self.OSCReceiver.add_method("/select/monitor_input", 'i', self.select_monitorIn_callback)
-        self.OSCReceiver.add_method("/select/monitor_disk", 'i', self.select_monitorDisk_callback)
-        self.OSCReceiver.add_method("/select/n_inputs", 'i', self.select_ninputs_callback)
-        self.OSCReceiver.add_method("/select/n_outputs", 'i', self.select_noutputs_callback)
-        self.OSCReceiver.add_method("/select/trimdB", 'f', self.select_trimdB_callback)
-        self.OSCReceiver.add_method("/select/fader", 'f', self.select_fader_callback)
-        self.OSCReceiver.add_method("/select/gain", 'f', self.select_fader_gain_callback)
-        self.OSCReceiver.add_method("/select/pan_stereo_position", 'f', self.select_pan_pos_callback)
-        self.OSCReceiver.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
-        self.OSCReceiver.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
-        self.OSCReceiver.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
-        self.OSCReceiver.add_method("/select/pan_stereo_position/automation", 'i', self.select_pan_position_automation_callback)
-        self.OSCReceiver.add_method("/select/pan_stereo_width/automation", 'i', self.select_pan_width_automation_callback)
-        self.OSCReceiver.add_method("/select/send_name", 'is', self.select_send_name_callback)
-        self.OSCReceiver.add_method("/select/send_fader", 'if', self.select_send_fader_callback)
-        self.OSCReceiver.add_method("/select/send_gain", 'if', self.select_send_gain_callback)
-        self.OSCReceiver.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
-        self.OSCReceiver.add_method("/strip/sends", None, self.sends_query_callback)
-        self.OSCReceiver.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
+        self.osc_registered_methods = []
+
+        self.add_method("/strip/fader", 'if', self.fader_callback)
+        self.add_method("/strip/gain", 'if', self.fader_gain_callback)
+        self.add_method("/strip/solo", 'if', self.solo_callback)
+        self.add_method("/strip/mute", 'if', self.mute_callback)
+        self.add_method("/strip/recenable", 'if', self.rec_callback)
+        self.add_method("/strip/select", 'if', self.select_callback)
+        self.add_method("/strip/meter", 'if', self.meter_callback)
+        self.add_method("/reply", 'ssiiiiii', self.reply_callback_Track)
+        self.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
+        self.add_method("/reply", 'shhi', self.reply_callback_EndRoute)
+        self.add_method("/position/smpte", 's', self.smpte_position_callback)
+        self.add_method("/select/name", 's', self.select_name_callback)
+        self.add_method("/select/polarity", 'i', self.select_phase_callback)
+        self.add_method("/select/recenable", 'i', self.select_rec_callback)
+        self.add_method("/select/mute", 'i', self.select_mute_callback)
+        self.add_method("/select/solo", 'i', self.select_solo_callback)
+        self.add_method("/select/solo_iso", 'i', self.select_soloIso_callback)
+        self.add_method("/select/solo_safe", 'i', self.select_soloLock_callback)
+        self.add_method("/select/monitor_input", 'i', self.select_monitorIn_callback)
+        self.add_method("/select/monitor_disk", 'i', self.select_monitorDisk_callback)
+        self.add_method("/select/n_inputs", 'i', self.select_ninputs_callback)
+        self.add_method("/select/n_outputs", 'i', self.select_noutputs_callback)
+        self.add_method("/select/trimdB", 'f', self.select_trimdB_callback)
+        self.add_method("/select/fader", 'f', self.select_fader_callback)
+        self.add_method("/select/gain", 'f', self.select_fader_gain_callback)
+        self.add_method("/select/pan_stereo_position", 'f', self.select_pan_pos_callback)
+        self.add_method("/select/pan_stereo_width", 'f', self.select_pan_width_callback)
+        self.add_method("/select/trimdB/automation", 'i', self.select_trimdB_automation_callback)
+        self.add_method("/select/fader/automation", 'i', self.select_fader_automation_callback)
+        self.add_method("/select/pan_stereo_position/automation", 'i', self.select_pan_position_automation_callback)
+        self.add_method("/select/pan_stereo_width/automation", 'i', self.select_pan_width_automation_callback)
+        self.add_method("/select/send_name", 'is', self.select_send_name_callback)
+        self.add_method("/select/send_fader", 'if', self.select_send_fader_callback)
+        self.add_method("/select/send_gain", 'if', self.select_send_gain_callback)
+        self.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
+        self.add_method("/strip/sends", None, self.sends_query_callback)
+        self.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
+        self.add_method("/strip/name", 'is', self.strip_name_changed_callback)
+        self.add_method("/heartbeat", 'f', self.heartbeat_callback)
         self.OSCReceiver.add_method(None, None, self.fallback)
+
+    def add_method(self, path, typespec, callback):
+        """Wrapper around Liblo's add_method that remembers what was registered."""
+        self.OSCReceiver.add_method(path, typespec, callback)
+        self.osc_registered_methods.append((path, typespec))
 
     def start(self):
         self.OSCReceiver.start()
 
     def stop(self):
+        # Unregister EVERY handler registered through our wrapper
+        for path, typespec in self.osc_registered_methods:
+            self.OSCReceiver.del_method(path, typespec)
+
         self.OSCReceiver.del_method(None, None)
-        self.OSCReceiver.del_method("/strip/meter", 'if')
-        time.sleep(0.1)
+        self.osc_registered_methods.clear()
         self.OSCReceiver.stop()
 
     def fader_callback(self, path, args):
@@ -357,6 +373,13 @@ class OSCServer(GObject.GObject):
         if args[0] == 'panner_2in2out':
             bPannerHasWidthControl = True
         GObject.idle_add(self.emit, 'select_panner_must_have_width_control_changed', bPannerHasWidthControl)
+
+    def strip_name_changed_callback (self, path, args):
+        i, name = args
+        GObject.idle_add(self.emit, 'strip_name_changed', i, name)
+
+    def heartbeat_callback (self, path, args):
+        GObject.idle_add(self.emit, 'osc_heartbeat_tick')
 
     def fallback(self, path, args, types, src):
         str_types = ""

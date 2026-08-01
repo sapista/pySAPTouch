@@ -20,6 +20,10 @@ class LEDWidget(Gtk.DrawingArea):
         self.on = value
         self.queue_draw()
 
+    def set_label(self, txt_label):
+        self.label = txt_label
+        self.queue_draw()
+
     def get_value(self):
         return self.on
 
@@ -32,7 +36,7 @@ class LEDWidget(Gtk.DrawingArea):
         cr.select_font_face("Arial", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         cr.set_font_size(11)
         txt_x, txt_y, txt_w, txt_h, txt_dx, txt_dy = cr.text_extents(self.label)
-        cr.move_to( 22, h / 2.0 + txt_h / 2.0)
+        cr.move_to( 25, h / 2.0 + txt_h / 2.0)
         cr.show_text(self.label)
 
         #LED

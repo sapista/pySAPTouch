@@ -22,6 +22,8 @@ import selectFaderCtlWidget
 import stripTable
 import stripTypes
 import time
+import oscconnectionwatchdog
+import LEDWidget
 
 """ ControllerGUI class
 This class implements a gtk GUI for sending osc messages using the liblo.send() method.
@@ -37,18 +39,23 @@ class ControllerGUI(Gtk.Window):
                                        buttons=Gtk.ButtonsType.YES_NO,
                                        text="Are you sure to quit?")
 
-        resp = quitDialog.run()
-        quitDialog.destroy()
-        if resp == Gtk.ResponseType.YES:
-            self.oscserver.stop()
-            self.faderCtl.close()
-            return False
-
-        # Keep the application open
+        # Handle response asynchronously instead of blocking with .run()
+        quitDialog.connect("response", self._on_quit_response)
+        quitDialog.show_all()
         return True
 
+    def _on_quit_response(self, dialog, response_id):
+        dialog.destroy()
+
+        if response_id == Gtk.ResponseType.YES:
+            self.watchdog.stop()
+            self.oscserver.stop()
+            self.faderCtl.close()
+            self.destroy(None)
+
     def destroy(self, widget):
-        Gtk.main_quit()
+        #Defers main_quit to the next idle loop cycle for a clean exit
+        GLib.idle_add(Gtk.main_quit)
 
     def btn_close_clicked(self, widget):
         self.close()
@@ -94,16 +101,31 @@ class ControllerGUI(Gtk.Window):
         else:
             self.bLooping = True
 
-    def on_jog_mode_changed(self, combo_box):
-        self.jog_mode = self.CB_JogWheel_mode.get_active_text()
+    def on_jog_mode_changed(self, widget):
         jog_id = -1
-        if self.jog_mode == "Jog":
+        self.btn_jog_mode.set_active_state(False)
+        self.btn_scrub_mode.set_active_state(False)
+        self.btn_scroll_mode.set_active_state(False)
+        self.btn_marker_mode.set_active_state(False)
+        self.btn_rgain_mode.set_active_state(False)
+        if widget == self.btn_jog_mode:
+            self.jog_mode = "Jog"
             jog_id = 0
-        elif self.jog_mode == "Marker":
-            jog_id = 4
-            self.encoder_ticks_marker_counter = 0
-        elif self.jog_mode == "Scroll":
+            self.btn_jog_mode.set_active_state(True)
+        elif widget == self.btn_scrub_mode:
+            self.jog_mode = "Scrub"
+            self.btn_scrub_mode.set_active_state(True)
+        elif widget == self.btn_scroll_mode:
+            self.jog_mode = "Scroll"
             jog_id = 5
+            self.btn_scroll_mode.set_active_state(True)
+        elif widget == self.btn_marker_mode:
+            self.jog_mode = "Marker"
+            jog_id = 4
+            self.btn_marker_mode.set_active_state(True)
+        elif widget == self.btn_rgain_mode:
+            self.jog_mode = "R.Gain"
+            self.btn_rgain_mode.set_active_state(True)
 
         if jog_id is not -1:
             liblo.send(self.target, "/jog/mode", jog_id)
@@ -133,7 +155,7 @@ class ControllerGUI(Gtk.Window):
         if self.jog_mode == "Jog":
             liblo.send(self.target, "/jog", self.encoder_speed * self.encoder_accel)
 
-        elif self.jog_mode == "Shuttle":
+        elif self.jog_mode == "Scrub":
             tspeed =  self.encoder_speed * self.encoder_accel * 1.5
             if tspeed < 0.4 and tspeed > 0: tspeed = 0.4
             if tspeed > -0.4 and tspeed < 0: tspeed = -0.4
@@ -284,9 +306,10 @@ class ControllerGUI(Gtk.Window):
     def refresh_strip_list_ALL(self, widget):
         self.strip_table_tracks.clear_strips()
         self.strip_table_VCA.clear_strips()
+        self.dict_ardour_strips = {} #Clear local strips dictionary
 
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
-        liblo.send(self.target, "/set_surface", 0, 23, 24771, 2, 0)  # Check Ardour OSC preferences for reference of these values
+        liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
         liblo.send(self.target, "/strip/list")
@@ -360,6 +383,7 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/strip/spill", ichannel)
         self.strip_table_tracks.clear_strips()
         self.strip_table_VCA.clear_strips()
+        self.dict_ardour_strips = {} #Clear local strips dictionary
         liblo.send(self.target, "/strip/list")
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
@@ -431,10 +455,16 @@ class ControllerGUI(Gtk.Window):
         return True
 
     def list_osc_reply_track(self, widget, ssid, name, type, mute, solo, rec, inputs, outputs):
+        if ssid not in self.dict_ardour_strips:
+            self.dict_ardour_strips[ssid] = name
+
         if type is stripTypes.StripEnum.AudioTrack or type is stripTypes.StripEnum.MidiTrack:
             self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
 
     def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs):
+        if ssid not in self.dict_ardour_strips:
+            self.dict_ardour_strips[ssid] = name
+
         if type is stripTypes.StripEnum.AudioBus or type is stripTypes.StripEnum.MidiBus:
             self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
@@ -446,6 +476,11 @@ class ControllerGUI(Gtk.Window):
                 self.strip_table_VCA.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
     def list_osc_reply_end(self, widget):
+        #Connected, set watchdog
+        self.watchdog.set_OSC_online(True)
+        self.LED_OSCconnection.set_value(True)
+        self.LED_OSCconnection.set_label("OSC Online")
+
         self.strip_table_tracks.fill_strips()
         self.strip_table_VCA.fill_strips()
 
@@ -622,6 +657,38 @@ class ControllerGUI(Gtk.Window):
         self.sends_table.set_strip_name(send_id, send_name)
         self.sends_table.show_strip(send_id)
 
+    def strip_name_osc_changed(self, widget, ssid, name):
+        #If the strip dictionary is empty do nothing
+        if len(self.dict_ardour_strips) == 0:
+            return
+
+        if ssid in self.dict_ardour_strips:
+            if name == self.dict_ardour_strips[ssid]:
+                #nothing to do
+                #print(f"Strip {ssid} already exists with name: '{self.dict_ardour_strips[ssid]}'")
+                return
+
+        #print("strip_name_osc_changed ssid '%d'  name '%s'" % (ssid, name))
+        #Strips changes so call the full refresh
+        self.refresh_strip_list_ALL(None)
+
+    def osc_heartbeat_tick(self, widget):
+        if not self.watchdog.get_OSC_online():
+            return
+        self.watchdog.reset()
+        self.LED_OSCconnection.set_value(not self.LED_OSCconnection.get_value())
+
+    def on_watchdog_expired(self):
+        if self.watchdog.get_OSC_online():
+            #OSC connection lost! change to offline mode
+            self.watchdog.set_OSC_online(False)
+            self.LED_OSCconnection.set_value(False)
+            self.LED_OSCconnection.set_label("OSC Offline")
+
+        #print("Watchdog timed out! Connection lost. Reconnecting...")
+        self.refresh_strip_list_ALL(None)
+        self.watchdog.start()
+
     def select_send_enable_osc_changed(self, widget, send_id, send_enabled):
         self.sends_table.set_mute(send_id, send_enabled)
 
@@ -734,43 +801,48 @@ class ControllerGUI(Gtk.Window):
         self.headerBar.set_show_close_button(False)
         self.set_titlebar(self.headerBar)
         self.ImgLogo = Gtk.Image.new_from_file("icons/sapaudio_logo.png")
-        self.headerBar.set_custom_title(self.ImgLogo)
+        self.headerBar.set_title("SAPTouch")
+        self.headerBar.set_custom_title(Gtk.Box()) #Remove title from the GUI (the logo will do)
+        self.headerBar.pack_start(self.ImgLogo)
+
+        self.hbox_top = Gtk.HBox()
+        self.vbox_top.pack_start(self.hbox_top, expand=False, fill=False, padding=0)
 
         #Edit Mode buttons
         self.btn_smart_mode = Gtk.Button.new_with_label("")
         self.btn_smart_mode.get_child().set_markup("<span weight='bold' size='large' color='white'>Smart</span>")
         self.btn_smart_mode.connect("clicked", self.btn_smart_mode_clicked)
-        self.headerBar.pack_start(self.btn_smart_mode)
+        self.hbox_top.pack_start(self.btn_smart_mode, expand=False, fill=False, padding=0)
 
         self.btn_object_mode = Gtk.Button()
         self.btn_object_mode.set_image(Gtk.Image.new_from_file("icons/object_mode.png"))
         self.btn_object_mode.connect("clicked", self.btn_object_mode_clicked)
-        self.headerBar.pack_start(self.btn_object_mode)
+        self.hbox_top.pack_start(self.btn_object_mode, expand=False, fill=False, padding=0)
 
         self.btn_range_mode = Gtk.Button()
         self.btn_range_mode.set_image(Gtk.Image.new_from_file("icons/range_mode.png"))
         self.btn_range_mode.connect("clicked", self.btn_range_mode_clicked)
-        self.headerBar.pack_start(self.btn_range_mode)
+        self.hbox_top.pack_start(self.btn_range_mode, expand=False, fill=False, padding=0)
 
         self.btn_cut_mode = Gtk.Button()
         self.btn_cut_mode.set_image(Gtk.Image.new_from_file("icons/cut_mode.png"))
         self.btn_cut_mode.connect("clicked", self.btn_cut_mode_clicked)
-        self.headerBar.pack_start(self.btn_cut_mode)
+        self.hbox_top.pack_start(self.btn_cut_mode, expand=False, fill=False, padding=0)
 
         self.btn_timefx_mode = Gtk.Button()
         self.btn_timefx_mode.set_image(Gtk.Image.new_from_file("icons/timefx_mode.png"))
         self.btn_timefx_mode.connect("clicked", self.btn_timefx_mode_clicked)
-        self.headerBar.pack_start(self.btn_timefx_mode)
+        self.hbox_top.pack_start(self.btn_timefx_mode, expand=False, fill=False, padding=0)
 
         self.btn_draw_mode = Gtk.Button()
         self.btn_draw_mode.set_image(Gtk.Image.new_from_file("icons/draw_mode.png"))
         self.btn_draw_mode.connect("clicked", self.btn_draw_mode_clicked)
-        self.headerBar.pack_start(self.btn_draw_mode)
+        self.hbox_top.pack_start(self.btn_draw_mode, expand=False, fill=False, padding=0)
 
         self.btn_content_mode = Gtk.Button()
         self.btn_content_mode.set_image(Gtk.Image.new_from_file("icons/contenttool_mode.png"))
         self.btn_content_mode.connect("clicked", self.btn_content_mode_clicked)
-        self.headerBar.pack_start(self.btn_content_mode)
+        self.hbox_top.pack_start(self.btn_content_mode, expand=False, fill=False, padding=0)
 
         #Close button
         self.btn_close = Gtk.Button()
@@ -802,25 +874,46 @@ class ControllerGUI(Gtk.Window):
 
         #SOLO cancel button
         self.btn_solo_cancel = Gtk.Button.new_with_label("")
-        self.btn_solo_cancel.get_child().set_markup("<span weight='bold' size='medium' color='#52824e'>Cancel\nSOLO</span>")
+        self.btn_solo_cancel.get_child().set_markup("<span weight='bold' size='large' color='#52824e'>Cancel\nSOLO</span>")
         self.btn_solo_cancel.get_child().set_justify(Gtk.Justification.CENTER)
         self.btn_solo_cancel.connect("clicked", self.btn_solo_cancel_clicked)
         self.headerBar.pack_end(self.btn_solo_cancel)
 
         # Jog-Wheel mode selector
+        self.wheel_frame = Gtk.Frame(label="  Wheel Mode  ")
+        #self.wheel_frame.set_shadow_type(Gtk.ShadowType.NONE)
+        self.wheel_frame.set_shadow_type(Gtk.ShadowType.IN)
+        self.wheel_hbox = Gtk.HBox()
+        self.wheel_hbox.set_border_width(2)
+        self.wheel_frame.add(self.wheel_hbox)
+
+        self.btn_jog_mode = simplebuttonwidget.SimpleButton("JOG", "#FFFF00")
+        self.btn_jog_mode.set_size_request(80, -1)
+        self.wheel_hbox.pack_start(self.btn_jog_mode, expand=False, fill=False, padding=2)
+        self.btn_jog_mode.connect("clicked", self.on_jog_mode_changed)
+
+        self.btn_scrub_mode = simplebuttonwidget.SimpleButton("SCRUB", "#FFFF00")
+        self.btn_scrub_mode.set_size_request(80, -1)
+        self.wheel_hbox.pack_start(self.btn_scrub_mode, expand=False, fill=False, padding=2)
+        self.btn_scrub_mode.connect("clicked", self.on_jog_mode_changed)
+
+        self.btn_scroll_mode = simplebuttonwidget.SimpleButton("Scroll", "#FFFF00")
+        self.btn_scroll_mode.set_size_request(80, -1)
+        self.wheel_hbox.pack_start(self.btn_scroll_mode, expand=False, fill=False, padding=2)
+        self.btn_scroll_mode.connect("clicked", self.on_jog_mode_changed)
+
+        self.btn_rgain_mode = simplebuttonwidget.SimpleButton("R.Gain", "#FFFF00")
+        self.btn_rgain_mode.set_size_request(80, -1)
+        self.wheel_hbox.pack_start(self.btn_rgain_mode, expand=False, fill=False, padding=2)
+        self.btn_rgain_mode.connect("clicked", self.on_jog_mode_changed)
+
+        self.btn_marker_mode = simplebuttonwidget.SimpleButton("Marker", "#FFFF00")
+        self.btn_marker_mode.set_size_request(80, -1)
+        self.wheel_hbox.pack_start(self.btn_marker_mode, expand=False, fill=False, padding=2)
+        self.btn_marker_mode.connect("clicked", self.on_jog_mode_changed)
+
         self.jog_mode = "" #Init with no mode selected
-        self.CB_JogWheel_mode = Gtk.ComboBoxText()
-        self.CB_JogWheel_mode.append_text("Jog")
-        self.CB_JogWheel_mode.append_text("Shuttle")
-        self.CB_JogWheel_mode.append_text("Scroll")
-        self.CB_JogWheel_mode.append_text("R.Gain")
-        self.CB_JogWheel_mode.append_text("Marker")
-        self.CB_JogWheel_mode.set_active(-1)
-        self.CB_JogWheel_mode.connect("changed", self.on_jog_mode_changed)
-        self.headerBar.pack_end(self.CB_JogWheel_mode)
-        lbl_wheelMode = Gtk.Label()
-        lbl_wheelMode.set_markup("<span size='medium' color='white'>Wheel\nmode:</span>")
-        self.headerBar.pack_end(lbl_wheelMode)
+        self.headerBar.pack_end(self.wheel_frame)
 
         # Jog-Wheel off timer
         self.JogWheel_timer_id = None
@@ -829,13 +922,19 @@ class ControllerGUI(Gtk.Window):
         self.btn_session_save = Gtk.Button()
         self.btn_session_save.set_image(Gtk.Image.new_from_file("icons/save_icon.png"))
         self.btn_session_save.connect("clicked", self.btn_session_save_clicked)
-        self.headerBar.pack_end(self.btn_session_save)
+        self.hbox_top.pack_start(self.btn_session_save, expand=False, fill=False, padding=0)
 
         # Refresh button All
         self.btn_refresh_ALL = Gtk.Button()
         self.btn_refresh_ALL.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
         self.btn_refresh_ALL.connect("clicked", self.refresh_strip_list_ALL)
-        self.headerBar.pack_end(self.btn_refresh_ALL)
+        self.hbox_top.pack_start(self.btn_refresh_ALL, expand=False, fill=False, padding=0)
+
+        #Connection heartbeat LED
+        self.LED_OSCconnection = LEDWidget.LEDWidget("OSC Offline", "#00FF00")
+        self.LED_OSCconnection.set_size_request(100, 10)
+        self.hbox_top.pack_end(self.LED_OSCconnection, expand=False, fill=False, padding=0)
+        self.LED_OSCconnection.set_value(False)
 
         # Mode buttons VCA and TRack/Bus
         self.btn_activate_VCA_mode =  simplebuttonwidget.SimpleButton("VCA's", "#ff6641")
@@ -1153,6 +1252,11 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_send_enable_changed", self.select_send_enable_osc_changed)
         self.oscserver.connect("select_send_fader_changed", self.select_send_fader_osc_changed)
         self.oscserver.connect("select_send_gain_changed", self.select_send_gain_osc_changed)
+        self.oscserver.connect("strip_name_changed", self.strip_name_osc_changed)
+        self.oscserver.connect("osc_heartbeat_tick", self.osc_heartbeat_tick)
+
+        #Dictionary that works together with 'strip_name_changed' to track all strips currently in ardour session
+        self.dict_ardour_strips = {}
 
         self.set_size_request(window_width, window_height)
         self.show_all()
@@ -1176,6 +1280,10 @@ class ControllerGUI(Gtk.Window):
 
         context = Gtk.StyleContext()
         context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+        #Watchdog timer to manage OSC connection
+        self.watchdog = oscconnectionwatchdog.OSCConnectionWatchdog(callback=self.on_watchdog_expired)
+        self.watchdog.start()
 
         # Maximize
         if window_maximize:
