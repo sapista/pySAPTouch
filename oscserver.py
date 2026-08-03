@@ -153,7 +153,7 @@ class OSCServer(GObject.GObject):
         #Increase the received socket buffer
         fd =  self.OSCReceiver.fileno()
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4194304) # 4 MB buffer
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8388608) # 8 MB buffer
 
         self.osc_registered_methods = []
 

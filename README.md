@@ -6,7 +6,8 @@ The UDP buffer is may be limited by the Linux kernel
 To make the UDP buffer limit settings permanent so it survives a reboot, add the line:
 
 ```text
-net.core.rmem_max=4194304
+net.core.rmem_max = 16777216
+net.core.rmem_default = 16777216
 ``` 
 
 to the bottom of the /etc/sysctl.conf file.
