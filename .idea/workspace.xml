@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="config in git now is an example">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -310,7 +309,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785569784168</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="config in git now is an example">
+      <option name="closed" value="true" />
+      <created>1785741043416</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1785741043416</updated>
+    </task>
+    <task id="LOCAL-00025" summary="config in git now is an example">
+      <option name="closed" value="true" />
+      <created>1785741056838</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1785741056838</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -348,7 +363,8 @@
     <MESSAGE value="working on encoder" />
     <MESSAGE value="Encoder fully working" />
     <MESSAGE value="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate" />
-    <option name="LAST_COMMIT_MESSAGE" value="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate" />
+    <MESSAGE value="config in git now is an example" />
+    <option name="LAST_COMMIT_MESSAGE" value="config in git now is an example" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

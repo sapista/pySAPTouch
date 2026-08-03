@@ -11,7 +11,8 @@ This models ensures a thread-safe gtk signal generation for incoming osc message
 """
 
 import stripselwidget
-import liblo
+#import liblo
+import pyliblo3 as liblo
 import socket
 from gi.repository import GObject
 
