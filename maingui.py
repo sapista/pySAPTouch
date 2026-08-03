@@ -128,7 +128,7 @@ class ControllerGUI(Gtk.Window):
             self.jog_mode = "R.Gain"
             self.btn_rgain_mode.set_active_state(True)
 
-        if jog_id is not -1:
+        if jog_id != -1:
             liblo.send(self.target, "/jog/mode", jog_id)
             liblo.send(self.target, "/transport_stop")
 
