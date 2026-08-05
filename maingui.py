@@ -419,10 +419,12 @@ class ControllerGUI(Gtk.Window):
         self.strip_table_tracks.set_rec(ichannel, bvalue)
 
     def select_osc_changed(self, widget, ichannel, bvalue):
-        # print "select received on channel '%d' with state '%s'" % (ichannel, bvalue)
+        #print( "select received on channel '%d' with state '%s'" % (ichannel, bvalue))
         if not self.bVCAmode:
             self.strip_table_tracks.strip_select(ichannel, bvalue) #This is ok for track/bus since ssid is checked inside
+
             if bvalue:
+
                 self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
 
                 # Query sends, instead of quering just hide all strips and let each send command to show its strip
@@ -935,6 +937,7 @@ class ControllerGUI(Gtk.Window):
         self.LED_OSCconnection = LEDWidget.LEDWidget("OSC Offline", "#00FF00")
         self.LED_OSCconnection.set_size_request(100, 10)
         self.hbox_top.pack_end(self.LED_OSCconnection, expand=False, fill=False, padding=0)
+
         self.LED_OSCconnection.set_value(False)
 
         # Mode buttons VCA and TRack/Bus
@@ -988,7 +991,9 @@ class ControllerGUI(Gtk.Window):
         self.table_bank = Gtk.Grid()
         self.table_bank.set_column_homogeneous(True)
         self.strips_list_selbank = []
+
         self.stack.add_named(self.vbox_top, "strip_list")
+
         self.add(self.stack)
 
         for i in range(0, 8):
@@ -1164,10 +1169,13 @@ class ControllerGUI(Gtk.Window):
         self.eVBox_sends.pack_start(self.eLbl_Sends, expand=False, fill=False, padding=0)
         self.sends_table = stripTable.StripTable(4, None, True)
         self.sends_table.clear_strips()
-        for i in range(0, 32):
+
+        #Limiting the number of controllable sends to 20 (i think its enough)
+        for i in range(0, 16):
             self.sends_table.append_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
                                           False, False, False, 1, 1)
         self.sends_table.fill_strips()
+
         self.sends_table.connect("bank_channel_mute_changed", self.bank_send_active_changed)
         self.sends_table.connect("bank_channel_fader_changed", self.bank_send_fader_changed)
         self.sends_table.connect("bank_channel_fader_gain_changed", self.bank_send_fader_gain_changed)
@@ -1270,7 +1278,7 @@ class ControllerGUI(Gtk.Window):
         #Set the view according the boolean VCA mode
         self.set_VCA_strip_view_mode()
 
-        #Start with all send strips hidden, must be donw here after the show_all() of the main screen
+        #Start with all send strips hidden, must be done here after the show_all() of the main screen
         for i in range(0, self.sends_table.get_number_of_strips()):
             self.sends_table.hide_strip(i+1)
 

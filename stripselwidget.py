@@ -168,3 +168,9 @@ class StripSelWidget(Gtk.EventBox):
 
     def get_fader_gain(self):
         return  self.fader_gain_value
+
+    def hide_child(self):
+        self.MFrame.hide()
+
+    def show_child(self):
+        self.MFrame.show()

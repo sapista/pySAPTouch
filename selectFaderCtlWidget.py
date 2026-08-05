@@ -30,13 +30,17 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
         self.isSend = isSend
         self.vbox = Gtk.VBox()
         self.lbl_title = Gtk.Label()
+        self.lbl_title_send = Gtk.Label()
+        self.lbl_title_send.set_markup("<span weight='bold' font_desc='Arial 16'>Send</span>")
         self.set_name_label(name)
-        self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
 
         if isSend:
             self.btn_Active = simplebuttonwidget.SimpleButton("ON", "#00FF00")
             self.btn_Active.connect("clicked", self.active_clicked)
             self.btn_Active.set_hexpand(True)
+            self.vbox.pack_start(self.lbl_title_send, expand=True, fill=True, padding=0)
+
+        self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
 
         if isPanner:
             self.lbl_dBvalue = None
@@ -105,12 +109,14 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
             self.btn_Latch.set_sensitive(False)
 
     def set_name_label(self, name):
-        if self.isSend:
-            name = "Send: " + name
         if len(name) > MAX_TRACK_NAME_LENGTH:
             name = name[:MAX_TRACK_NAME_LENGTH] + "..."
 
-        self.lbl_title.set_markup("<span weight='bold' font_desc='Arial 16'>" + name + "</span>")
+        if self.isSend:
+            self.lbl_title.set_markup("<span weight='bold' size='medium'>" + name + "</span>")
+        else:
+            self.lbl_title.set_markup("<span weight='bold' font_desc='Arial 16'>" + name + "</span>")
+
 
     def set_gain_label(self, value):
         if self.lbl_dBvalue is not None:

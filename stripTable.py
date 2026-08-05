@@ -193,12 +193,15 @@ class StripTable(Gtk.ScrolledWindow):
     def hide_strip(self, ssid):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
-            self.strips_list_widgets[idx].hide()
+            self.strips_list_widgets[idx].set_sensitive(False)
+            self.strips_list_widgets[idx].hide_child()
 
     def show_strip(self, ssid):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
-            self.strips_list_widgets[idx].show()
+            self.strips_list_widgets[idx].set_sensitive(True)
+            self.strips_list_widgets[idx].show_child()
+
 
     def strip_select(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:

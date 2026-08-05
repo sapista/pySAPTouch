@@ -19,7 +19,7 @@
     </encoder>
     <misc>
         <window_width>1280</window_width>
-        <window_height>750</window_height>
+        <window_height>800</window_height>
         <window_maximize>False</window_maximize>
         <meter_waveform_speed>10</meter_waveform_speed>
     </misc>
