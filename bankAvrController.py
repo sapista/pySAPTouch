@@ -7,6 +7,8 @@ from gi.repository import GObject
 import pyFaderSerialCOM
 from enum import Enum
 
+FADER_TOLERANCE = 0.005
+
 class FaderBankState(Enum):
     EIGHT_CHANNELS_FADERS = 1
     SINGLE_CHANNEL_EDIT = 2
@@ -141,37 +143,37 @@ class BankAvrController(GObject.GObject):
         return self.state
 
     def move_bank_fader(self, iFader, value):
-        if self.faders_pos[iFader] != value:
+        if abs(self.faders_pos[iFader] - value) > FADER_TOLERANCE:
             self.faders_pos[iFader] = value
             if self.state == FaderBankState.EIGHT_CHANNELS_FADERS:
                 self.avrCOM.moveFader(iFader, value)
 
     def move_single_trim(self, value):
-        if self.trim_edit_pos != value:
+        if abs(self.trim_edit_pos - value) > FADER_TOLERANCE:
             self.trim_edit_pos = value
             if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
                 self.avrCOM.moveFader(0, 0.025 * value + 0.5) #Converting it from -20 to 20 dB range to 0 to 1
 
     def move_single_fader(self, value):
-        if self.fader_edit_pos != value:
+        if abs(self.fader_edit_pos - value) > FADER_TOLERANCE:
             self.fader_edit_pos = value
             if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
                 self.avrCOM.moveFader(1, value)
 
     def move_single_pan_pos(self, value):
-        if self.pan_edit_pos != value:
+        if abs(self.pan_edit_pos - value) > FADER_TOLERANCE:
             self.pan_edit_pos = value
             if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
                 self.avrCOM.moveFader(2, value)
 
     def move_single_pan_width(self, value):
-        if self.pan_edit_width != value:
+        if abs(self.pan_edit_width - value) > FADER_TOLERANCE:
             self.pan_edit_width = value
             if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
                 self.avrCOM.moveFader(3, value)
 
     def move_single_send(self, iSend, value):
-        if self.sends_pos[iSend] != value:
+        if abs(self.sends_pos[iSend] - value) > FADER_TOLERANCE:
             self.sends_pos[iSend] = value
             if self.state == FaderBankState.SINGLE_CHANNEL_EDIT:
                 self.avrCOM.moveFader(4+iSend, value)
