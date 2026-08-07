@@ -310,7 +310,8 @@ class ControllerGUI(Gtk.Window):
         self.dict_ardour_strips = {} #Clear local strips dictionary
 
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
-        liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
+        #liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
+        liblo.send(self.target, "/set_surface", 0, 23, 24587, 2, 0) #TODO testing this
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
         liblo.send(self.target, "/strip/list")

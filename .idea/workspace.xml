@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="minor fix">
-      <change afterPath="$PROJECT_DIR$/launcher.py" afterDir="false" />
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="-send table width fix&#10;-added a launcher">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example_config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/example_config.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -355,7 +350,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785742337562</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="-send table width fix&#10;-added a launcher">
+      <option name="closed" value="true" />
+      <created>1785916006255</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1785916006255</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -371,7 +374,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added xml to config ports and ip" />
     <MESSAGE value="added fullscreen to config file&#10;config file renaming" />
     <MESSAGE value="fix window size issues" />
     <MESSAGE value="improved gui" />
@@ -396,7 +398,8 @@
     <MESSAGE value="config in git now is an example" />
     <MESSAGE value="changed import liblo to import pyliblo3 as liblo" />
     <MESSAGE value="minor fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="minor fix" />
+    <MESSAGE value="-send table width fix&#10;-added a launcher" />
+    <option name="LAST_COMMIT_MESSAGE" value="-send table width fix&#10;-added a launcher" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
