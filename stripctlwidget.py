@@ -49,6 +49,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.lbl_strip_type = Gtk.Label()
         self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
         self.lbl_gain = Gtk.Label()
+        self.lbl_gain.set_text("##.# dB")
         self.vbox.pack_start(self.lbl_gain, expand=True, fill=True, padding=0)
 
         self.table_selrecsolomute = Gtk.Grid()
@@ -161,7 +162,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
 
         if self.ssid is None:
             self.lbl_strip_type.set_label("")
-            self.lbl_gain.set_label("")
+            self.lbl_gain.set_text("")
         else:
             self.lbl_strip_type.set_label(str(self.ssid) + "-" + dirstriptype[self.type])
 
