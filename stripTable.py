@@ -154,17 +154,19 @@ class StripTable(Gtk.ScrolledWindow):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
             self.strips_list_widgets[idx].set_fader(value)  # Store fader, used in send mode
-            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
-                self.emit('bank_channel_fader_changed', self.strips_list_widgets[idx].get_bank_index(), value)
+            bankIdx = self.strips_list_widgets[idx].get_bank()
+            if self.current_selected_bank == bankIdx:
+                self.emit('bank_channel_fader_changed', bankIdx, value)
 
     def set_fader_gain(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
 
             #TODO trying to diable here 2 see if its this!
-            #self.strips_list_widgets[idx].set_fader_gain(value)  # Store fader gain, used in send mode
-            #if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
-            #    self.emit('bank_channel_fader_gain_changed', self.strips_list_widgets[idx].get_bank_index(), value)
+            self.strips_list_widgets[idx].set_fader_gain(value)  # Store fader gain, used in send mode
+            bankIdx = self.strips_list_widgets[idx].get_bank()
+            if self.current_selected_bank == bankIdx:
+                self.emit('bank_channel_fader_gain_changed', bankIdx, value)
 
     def set_solo(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:
