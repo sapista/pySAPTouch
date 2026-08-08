@@ -4,10 +4,11 @@ Definition of a widget to handle all Ardour controls of a single strip.
 This class is responsible to deal with all events related with SPI or I2C fader controller.
 """
 
-from gi.repository import Gtk, GObject, GLib
+from gi.repository import Gtk, GObject
 from stripTypes import StripEnum
 import simplebuttonwidget
 import customframewidget
+import fastlabel
 
 MAX_TRACK_NAME_LENGTH = 15
 
@@ -48,7 +49,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
         self.lbl_strip_type = Gtk.Label()
         self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
-        self.lbl_gain = Gtk.Label()
+        self.lbl_gain = fastlabel.FastLabel()
         self.lbl_gain.set_text("##.# dB")
         self.vbox.pack_start(self.lbl_gain, expand=True, fill=True, padding=0)
 
@@ -90,20 +91,6 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.set_ssid_name(None, "")
         self.set_strip_type(StripEnum.Empty)
         self.set_size_request(-1, 120)
-
-        #Gain Label
-        self.gain_label_value = None
-        self.gain_label_value_next = None
-        self.bGainLblTimmerActive = False
-
-    def update_gain_label_timeout(self):
-        if self.gain_label_value != self.gain_label_value_next:
-            self.gain_label_value = self.gain_label_value_next
-            self.lbl_gain.set_text(str(round(self.gain_label_value, 1)) + " dB")
-        self.bGainLblTimmerActive = False
-
-        # Single shot timer
-        return False
 
     def set_ssid_name(self, ssid, name):
         self.ssid = ssid
@@ -172,14 +159,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.btn_select.set_active_state(self.select)
 
     def set_gain_label(self, value):
-        self.gain_label_value_next = value
-        if self.bGainLblTimmerActive:
-            return
-
-        self.gain_label_value = self.gain_label_value_next
-        self.lbl_gain.set_text(str(round(self.gain_label_value, 1)) + " dB")
-        self.bGainLblTimmerActive = True
-        GLib.timeout_add(200, self.update_gain_label_timeout)
+        self.lbl_gain.set_text(str(round(value, 1)) + " dB")
 
     def set_solo(self, bvalue):
         self.solo = bvalue
