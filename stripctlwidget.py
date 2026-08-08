@@ -47,9 +47,9 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.vbox = Gtk.VBox()
         self.lbl_title = Gtk.Label()
         self.vbox.pack_start(self.lbl_title, expand=True, fill=True, padding=0)
-        self.lbl_strip_type = Gtk.Label()
+        self.lbl_strip_type = fastlabel.FastLabel(font_size=11)
         self.vbox.pack_start(self.lbl_strip_type, expand=True, fill=True, padding=0)
-        self.lbl_gain = fastlabel.FastLabel()
+        self.lbl_gain = fastlabel.FastLabel(font_size=14)
         self.lbl_gain.set_text("##.# dB")
         self.vbox.pack_start(self.lbl_gain, expand=True, fill=True, padding=0)
 
@@ -148,10 +148,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
             self.btn_spill.show()
 
         if self.ssid is None:
-            self.lbl_strip_type.set_label("")
+            self.lbl_strip_type.set_text("")
             self.lbl_gain.set_text("")
         else:
-            self.lbl_strip_type.set_label(str(self.ssid) + "-" + dirstriptype[self.type])
+            self.lbl_strip_type.set_text(str(self.ssid) + "-" + dirstriptype[self.type])
 
 
     def set_select(self, bvalue):

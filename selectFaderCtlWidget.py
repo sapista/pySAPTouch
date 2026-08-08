@@ -30,9 +30,9 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
         self.bPannerHasWidthControl = True
         self.isSend = isSend
         self.vbox = Gtk.VBox()
-        self.lbl_title = Gtk.Label()
-        self.lbl_title_send = Gtk.Label()
-        self.lbl_title_send.set_markup("<span weight='bold' font_desc='Arial 16'>Send</span>")
+        self.lbl_title = fastlabel.FastLabel(font_size=16)
+        self.lbl_title_send = fastlabel.FastLabel(font_size=16)
+        self.lbl_title_send.set_text("Send")
         self.set_name_label(name)
 
         if isSend:
@@ -82,14 +82,13 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
 
         if isPanner:
             self.HBox_panner_lbls = Gtk.HBox()
-            self.lbl_pan_pos = Gtk.Label()
-            self.lbl_pan_pos.set_markup("<span weight='bold' font_desc='Arial 14'>Position</span>")
+            self.lbl_pan_pos = fastlabel.FastLabel(font_size=14)
+            self.lbl_pan_pos.set_text("Position")
             self.HBox_panner_lbls.pack_start(self.lbl_pan_pos, expand=True, fill=True, padding=0)
-            self.lbl_pan_width = Gtk.Label()
-            self.lbl_pan_width.set_markup("<span weight='bold' font_desc='Arial 14'>Width</span>")
+            self.lbl_pan_width = fastlabel.FastLabel(font_size=14)
+            self.lbl_pan_width.set_text("Width")
             self.HBox_panner_lbls.pack_start(self.lbl_pan_width, expand=True, fill=True, padding=0)
             self.vbox.pack_start(self.HBox_panner_lbls, expand=True, fill=True, padding=0)
-
 
         self.add(self.vbox)
         self.vbox.set_border_width(7)
@@ -112,12 +111,7 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
     def set_name_label(self, name):
         if len(name) > MAX_TRACK_NAME_LENGTH:
             name = name[:MAX_TRACK_NAME_LENGTH] + "..."
-
-        if self.isSend:
-            self.lbl_title.set_markup("<span weight='bold' size='medium'>" + name + "</span>")
-        else:
-            self.lbl_title.set_markup("<span weight='bold' font_desc='Arial 16'>" + name + "</span>")
-
+        self.lbl_title.set_text(name)
 
     def set_gain_label(self, value):
         self.lbl_dBvalue.set_text(str(round(value, 1)) + " dB")
@@ -135,10 +129,9 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
             self.bPannerHasWidthControl = value
             if not self.bPannerHasWidthControl:
                 self.set_panner_width(0.5)
-                self.lbl_pan_width.set_markup("<span weight='bold' font_desc='Arial 14'>-</span>")
+                self.lbl_pan_width.set_text("-")
             else:
-                self.lbl_pan_width.set_markup("<span weight='bold' font_desc='Arial 14'>Width</span>")
-
+                self.lbl_pan_width.set_text("Width")
 
     def set_sendID(self, ID):
         if self.isSend:

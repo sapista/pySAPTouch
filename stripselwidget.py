@@ -12,6 +12,7 @@ from gi.repository import Gtk, GObject, Gdk
 import customframewidget
 import miniMeter
 import LEDWidget
+import fastlabel
 from stripTypes import StripEnum
 MAX_TRACK_NAME_LENGTH = 15
 
@@ -27,7 +28,8 @@ class StripSelWidget(Gtk.EventBox):
         self.ssid = issid #The Ardour ssid
         self.ibank = ibank #The bank index at which this strip belongs
         self.ibank_index = ibank_index #The position of the strip in a bank
-        self.lbl_name = Gtk.Label()
+        self.lbl_name = fastlabel.FastLabel( font_size = 14)
+        self.lbl_name.set_text_color(1.0, 1.0, 1.0)
         self.set_name(sstripname)
         self.type = istriptype
         self.MFrame = customframewidget.CustomFrame(self.type)
@@ -46,8 +48,8 @@ class StripSelWidget(Gtk.EventBox):
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
 
-        self.lbl_type = Gtk.Label()
-        self.lbl_type.set_markup("<span size='small'>" + str(self.ssid) + "-" + dirstriptype[istriptype] + "</span>")
+        self.lbl_type = fastlabel.FastLabel( font_size = 13)
+        self.lbl_type.set_text(str(self.ssid) + "-" + dirstriptype[istriptype] )
 
         #Waveform viewer
         self.meter = miniMeter.MiniMeter()
@@ -115,15 +117,15 @@ class StripSelWidget(Gtk.EventBox):
         else:
             self.stripname = strip_name
 
-        self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
+        self.lbl_name.set_text(self.stripname)
 
     def set_selected(self, select):
         self.selected = select
         self.MFrame.set_selected(self.selected)
         if self.selected:
-            self.lbl_name.set_markup("<span foreground='#00ffc8' weight='bold' size='medium'>" + self.stripname + "</span>")
+            self.lbl_name.set_text_color(0.0, 1.0, 0.8)
         else:
-            self.lbl_name.set_markup("<span weight='bold' size='medium'>" + self.stripname + "</span>")
+            self.lbl_name.set_text_color(1.0, 1.0, 1.0)
 
     def set_bank_selected(self, bank_selected):
         self.MFrame.set_bank_selected(bank_selected)
