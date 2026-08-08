@@ -176,9 +176,10 @@ class StripCtlWidget(customframewidget.CustomFrame):
         if self.bGainLblTimmerActive:
             return
 
-        self.lbl_gain.set_text(str(round(self.gain_label_value_next , 1)) + " dB" )
+        self.gain_label_value = self.gain_label_value_next
+        self.lbl_gain.set_text(str(round(self.gain_label_value, 1)) + " dB")
         self.bGainLblTimmerActive = True
-        GLib.timeout_add(200, self.update_gain_label_timeout)
+        GLib.timeout_add(1000, self.update_gain_label_timeout)
 
     def set_solo(self, bvalue):
         self.solo = bvalue
