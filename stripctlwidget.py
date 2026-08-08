@@ -4,7 +4,7 @@ Definition of a widget to handle all Ardour controls of a single strip.
 This class is responsible to deal with all events related with SPI or I2C fader controller.
 """
 
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GLib
 from stripTypes import StripEnum
 import simplebuttonwidget
 import customframewidget
@@ -90,6 +90,20 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.set_strip_type(StripEnum.Empty)
         self.set_size_request(-1, 120)
 
+        #Gain Label
+        self.gain_label_value = None
+        self.gain_label_value_next = None
+        self.bGainLblTimmerActive = False
+
+    def update_gain_label_timeout(self):
+        if self.gain_label_value != self.gain_label_value_next:
+            self.gain_label_value = self.gain_label_value_next
+            self.lbl_gain.set_text(str(round(self.gain_label_value, 1)) + " dB")
+        self.bGainLblTimmerActive = False
+
+        # Single shot timer
+        return False
+
     def set_ssid_name(self, ssid, name):
         self.ssid = ssid
         if len(name) > MAX_TRACK_NAME_LENGTH:
@@ -157,7 +171,13 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.btn_select.set_active_state(self.select)
 
     def set_gain_label(self, value):
-        self.lbl_gain.set_text(str(round(value, 1)) + " dB" )
+        self.gain_label_value_next = value
+        if self.bGainLblTimmerActive:
+            return
+
+        self.lbl_gain.set_text(str(round(self.gain_label_value_next , 1)) + " dB" )
+        self.bGainLblTimmerActive = True
+        GLib.timeout_add(200, self.update_gain_label_timeout)
 
     def set_solo(self, bvalue):
         self.solo = bvalue

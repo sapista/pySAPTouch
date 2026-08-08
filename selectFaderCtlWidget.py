@@ -4,7 +4,7 @@ This widget can control the fader, trim gain and sends but not the stereo panner
 This widgets includes automation state contorls
 """
 
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GLib
 import simplebuttonwidget
 import customframewidget
 import pannerWidget
@@ -108,6 +108,20 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
             self.btn_Touch.set_sensitive(False)
             self.btn_Latch.set_sensitive(False)
 
+        #Gain Label
+        self.gain_label_value = None
+        self.gain_label_value_next = None
+        self.bGainLblTimmerActive = False
+
+    def update_gain_label_timeout(self):
+        if self.gain_label_value != self.gain_label_value_next:
+            self.gain_label_value = self.gain_label_value_next
+            self.lbl_dBvalue.set_text(str(round(self.gain_label_value, 1)) + " dB")
+        self.bGainLblTimmerActive = False
+
+        # Single shot timer
+        return False
+
     def set_name_label(self, name):
         if len(name) > MAX_TRACK_NAME_LENGTH:
             name = name[:MAX_TRACK_NAME_LENGTH] + "..."
@@ -120,7 +134,13 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
 
     def set_gain_label(self, value):
         if self.lbl_dBvalue is not None:
-            self.lbl_dBvalue.set_text(str(round(value, 1)) + " dB")
+            self.gain_label_value_next = value
+            if self.bGainLblTimmerActive:
+                return
+
+            self.lbl_dBvalue.set_text(str(round(self.gain_label_value_next, 1)) + " dB")
+            self.bGainLblTimmerActive = True
+            GLib.timeout_add(200, self.update_gain_label_timeout)
 
     def set_panner_position(self, value):
         if self.pannerWidget is not None:

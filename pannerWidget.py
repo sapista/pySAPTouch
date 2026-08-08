@@ -2,7 +2,7 @@
 Definition of a widget to display the panner state.
 """
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 import math
 import cairo
 
@@ -15,13 +15,39 @@ class PannerWidget(Gtk.DrawingArea):
         self.width = 0.0
         self.connect("draw", self.on_draw)
 
+        self.width_next_value = None
+        self.postion_next_value = None
+        self.bRedrawTimerActive = False
+
+    def update_redraw_timeout(self):
+        if ( self.width != self.width_next_value ) or (self.position != self.postion_next_value):
+            self.width = self.width_next_value
+            self.position = self.postion_next_value
+            self.queue_draw()
+        self.bRedrawTimerActive = False
+
+        # Single shot timer
+        return False
+
     def set_position(self, position):
-        self.position = position
+        self.postion_next_value = position
+        if self.bRedrawTimerActive:
+            return
+
+        self.bRedrawTimerActive = True
+        self.position = self.postion_next_value
         self.queue_draw()
+        GLib.timeout_add(20, self.update_redraw_timeout)
 
     def set_width(self, width):
-        self.width = width * 2.0 - 1.0 #Converting from Ardour 6.0 system between 0 to 1
+        self.width_next_value = width * 2.0 - 1.0 #Converting from Ardour 6.0 system between 0 to 1
+        if self.bRedrawTimerActive:
+            return
+
+        self.bRedrawTimerActive = True
+        self.width = self.width_next_value
         self.queue_draw()
+        GLib.timeout_add(20, self.update_redraw_timeout)
 
     def on_draw(self, area, cr):
         w = area.get_allocated_width()

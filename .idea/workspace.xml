@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="change ardour feedback value">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="add fader tolerance to avoid feedback bug !=">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pannerWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/pannerWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +47,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Python.launch.executor": "Debug",
+    "Python.launch.executor": "Run",
     "Python.maingui.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
@@ -365,7 +368,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786083709247</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="add fader tolerance to avoid feedback bug !=">
+      <option name="closed" value="true" />
+      <created>1786088025152</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1786088025152</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -381,7 +392,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="fix window size issues" />
     <MESSAGE value="improved gui" />
     <MESSAGE value="code cleanup" />
     <MESSAGE value="started to work in the edit mode" />
@@ -406,7 +416,8 @@
     <MESSAGE value="minor fix" />
     <MESSAGE value="-send table width fix&#10;-added a launcher" />
     <MESSAGE value="change ardour feedback value" />
-    <option name="LAST_COMMIT_MESSAGE" value="change ardour feedback value" />
+    <MESSAGE value="add fader tolerance to avoid feedback bug !=" />
+    <option name="LAST_COMMIT_MESSAGE" value="add fader tolerance to avoid feedback bug !=" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
