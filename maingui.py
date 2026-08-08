@@ -1225,7 +1225,11 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("list_reply_bus", self.list_osc_reply_bus)
         self.oscserver.connect("list_reply_end", self.list_osc_reply_end)
         self.oscserver.connect("fader_changed", self.fader_osc_changed)
+
+        #TODO disabling this gain label it is smooth!
         self.oscserver.connect("fader_gain_changed", self.fader_gain_osc_changed)
+
+
         self.oscserver.connect("solo_changed", self.solo_osc_changed)
         self.oscserver.connect("mute_changed", self.mute_osc_changed)
         self.oscserver.connect("rec_changed", self.rec_osc_changed)
@@ -1250,7 +1254,10 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_noutputs_changed", self.select_nOutputs_osc_changed)
         self.oscserver.connect("select_trimdB_changed", self.select_trimdB_osc_changed)
         self.oscserver.connect("select_fader_changed", self.select_fader_osc_changed)
+
+        # TODO disabling this gain label it is smooth!
         self.oscserver.connect("select_fader_gain_changed", self.select_fader_gain_osc_changed)
+
         self.oscserver.connect("select_pan_pos_changed", self.select_panPos_osc_changed)
         self.oscserver.connect("select_pan_width_changed", self.select_panWidth_osc_changed)
         self.oscserver.connect("select_panner_must_have_width_control_changed", self.select_panner_width_control_osc_changed)

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="add throttling timout at pannerwidget and gain labels">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="add throttling timout very large 2test at gain labels">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -390,7 +393,23 @@
       <option name="project" value="LOCAL" />
       <updated>1786169634916</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="add throttling timout very large 2test at gain labels">
+      <option name="closed" value="true" />
+      <created>1786172485454</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1786172485454</updated>
+    </task>
+    <task id="LOCAL-00035" summary="add throttling timout very large 2test at gain labels">
+      <option name="closed" value="true" />
+      <created>1786172491780</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1786172491780</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -406,7 +425,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="code cleanup" />
     <MESSAGE value="started to work in the edit mode" />
     <MESSAGE value="Edit mode completed trim, fader and panner but I think there are some bugs in Ardour 6.0..." />
     <MESSAGE value="Bug fix for the edit mode" />
@@ -431,7 +449,8 @@
     <MESSAGE value="change ardour feedback value" />
     <MESSAGE value="add fader tolerance to avoid feedback bug !=" />
     <MESSAGE value="add throttling timout at pannerwidget and gain labels" />
-    <option name="LAST_COMMIT_MESSAGE" value="add throttling timout at pannerwidget and gain labels" />
+    <MESSAGE value="add throttling timout very large 2test at gain labels" />
+    <option name="LAST_COMMIT_MESSAGE" value="add throttling timout very large 2test at gain labels" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
