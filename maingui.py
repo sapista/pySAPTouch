@@ -463,21 +463,21 @@ class ControllerGUI(Gtk.Window):
             self.dict_ardour_strips[ssid] = name
 
         if type is stripTypes.StripEnum.AudioTrack or type is stripTypes.StripEnum.MidiTrack:
-            self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
+            self.strip_table_tracks.register_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
 
     def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs):
         if ssid not in self.dict_ardour_strips:
             self.dict_ardour_strips[ssid] = name
 
         if type is stripTypes.StripEnum.AudioBus or type is stripTypes.StripEnum.MidiBus:
-            self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+            self.strip_table_tracks.register_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
         if type is stripTypes.StripEnum.VCA:
             if self.bSpill:
                 #In Spill mode, append the VCA stripe together with strips
-                self.strip_table_tracks.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+                self.strip_table_tracks.register_strip(ssid, name, type, mute, solo, None, inputs, outputs)
             else:
-                self.strip_table_VCA.append_strip(ssid, name, type, mute, solo, None, inputs, outputs)
+                self.strip_table_VCA.register_strip(ssid, name, type, mute, solo, None, inputs, outputs)
 
     def list_osc_reply_end(self, widget):
         #Connected, set watchdog
@@ -485,8 +485,9 @@ class ControllerGUI(Gtk.Window):
         self.LED_OSCconnection.set_value(True)
         self.LED_OSCconnection.set_label("OSC Online")
 
-        self.strip_table_tracks.fill_strips()
-        self.strip_table_VCA.fill_strips()
+        #TODO this is old, how to do with the new model?
+        #self.strip_table_tracks.fill_strips()
+        #self.strip_table_VCA.fill_strips()
 
         if self.bVCAmode:
             #VCA MODE
@@ -961,7 +962,7 @@ class ControllerGUI(Gtk.Window):
         self.stack.set_transition_duration(250)
 
         #Add the strip select table
-        self.strip_table_tracks = stripTable.StripTable(8, self.PIXELS_X_SECOND)
+        self.strip_table_tracks = stripTable.StripTable(8, 120, self.PIXELS_X_SECOND) #Limit to 120 tracks
         self.strip_table_tracks.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
         self.strip_table_tracks.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
         self.strip_table_tracks.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
@@ -973,7 +974,7 @@ class ControllerGUI(Gtk.Window):
         self.strip_table_tracks.connect("strip_select_changed", self.strip_select_changed)
         self.vbox_top.pack_start(self.strip_table_tracks, expand=True, fill=True, padding=0)
 
-        self.strip_table_VCA = stripTable.StripTable(8, self.PIXELS_X_SECOND, is_vca = True)
+        self.strip_table_VCA = stripTable.StripTable(8, 32, self.PIXELS_X_SECOND, is_vca = True) #Limit to 32 VCA's
         self.strip_table_VCA.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
         self.strip_table_VCA.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
         self.strip_table_VCA.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
@@ -1168,14 +1169,12 @@ class ControllerGUI(Gtk.Window):
         self.eLbl_Sends = Gtk.Label()
         self.eLbl_Sends.set_markup("<span weight='bold' size='xx-large' color='white'>Sends</span>")
         self.eVBox_sends.pack_start(self.eLbl_Sends, expand=False, fill=False, padding=0)
-        self.sends_table = stripTable.StripTable(4, None, True)
-        self.sends_table.clear_strips()
+        self.sends_table = stripTable.StripTable(4, 20, None, True) #Limit to 20 channels of sends
+        self.sends_table.clear_strips() #TODO is needed? revise
 
-        #Limiting the number of controllable sends to 20 (i think its enough)
-        for i in range(0, 16):
-            self.sends_table.append_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
+        for i in range(0, self.sends_table.get_number_of_strips()):
+            self.sends_table.register_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
                                           False, False, False, 1, 1)
-        self.sends_table.fill_strips()
 
         self.sends_table.connect("bank_channel_mute_changed", self.bank_send_active_changed)
         self.sends_table.connect("bank_channel_fader_changed", self.bank_send_fader_changed)
@@ -1225,11 +1224,7 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("list_reply_bus", self.list_osc_reply_bus)
         self.oscserver.connect("list_reply_end", self.list_osc_reply_end)
         self.oscserver.connect("fader_changed", self.fader_osc_changed)
-
-        #TODO disabling this gain label it is smooth!
         self.oscserver.connect("fader_gain_changed", self.fader_gain_osc_changed)
-
-
         self.oscserver.connect("solo_changed", self.solo_osc_changed)
         self.oscserver.connect("mute_changed", self.mute_osc_changed)
         self.oscserver.connect("rec_changed", self.rec_osc_changed)
@@ -1254,10 +1249,7 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_noutputs_changed", self.select_nOutputs_osc_changed)
         self.oscserver.connect("select_trimdB_changed", self.select_trimdB_osc_changed)
         self.oscserver.connect("select_fader_changed", self.select_fader_osc_changed)
-
-        # TODO disabling this gain label it is smooth!
         self.oscserver.connect("select_fader_gain_changed", self.select_fader_gain_osc_changed)
-
         self.oscserver.connect("select_pan_pos_changed", self.select_panPos_osc_changed)
         self.oscserver.connect("select_pan_width_changed", self.select_panWidth_osc_changed)
         self.oscserver.connect("select_panner_must_have_width_control_changed", self.select_panner_width_control_osc_changed)

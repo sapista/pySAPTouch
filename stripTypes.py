@@ -9,4 +9,7 @@ class StripEnum:
                             'AX': self.AuxBus, 'V': self.VCA}
 
     def map_ardour_type(self, sardourtype):
-        return self.ardourtypes[sardourtype]
+        try:
+            return self.ardourtypes[sardourtype]
+        except KeyError:
+            raise KeyError(f"The type '{sardourtype}' is not mapped in StripEnum.")
