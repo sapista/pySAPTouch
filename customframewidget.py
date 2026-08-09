@@ -10,10 +10,11 @@ import colorsys
 
 class CustomFrame(Gtk.Bin):
 
-    def __init__(self, stripType):
+    def __init__(self, stripType, bGhost = False):
         super(CustomFrame, self).__init__()
         self.selected = False
         self.bankSelected = False
+        self.bGhostMode = bGhost
 
         #Set strip color
         self.dirstripcolor = {StripEnum.Empty: '#353535',
@@ -37,6 +38,10 @@ class CustomFrame(Gtk.Bin):
         self.set_border_width(0)
         self.connect("draw", self.on_draw)
 
+    def set_ghost(self, bGhost):
+        self.bGhostMode = bGhost
+        self.queue_draw()
+
     def set_selected(self, bSelected):
         self.selected = bSelected
         self.queue_draw()
@@ -50,6 +55,9 @@ class CustomFrame(Gtk.Bin):
         self.queue_draw()
 
     def on_draw(self, area, cr):
+        if self.bGhostMode:
+            return
+
         w = area.get_allocated_width()
         h = area.get_allocated_height()
         border = 4

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="changed many labels to fastlabels">
-      <change beforePath="$PROJECT_DIR$/.idea/pySAPTouch.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pySAPTouch.iml" afterDir="false" />
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="first version (it still contains many bugs) of new strip table model">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customframewidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/customframewidget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTypes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -488,7 +488,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786199199019</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="first version (it still contains many bugs) of new strip table model">
+      <option name="closed" value="true" />
+      <created>1786264313822</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1786264313822</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -504,7 +512,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Strip selection widgets optimization and encapsulation" />
     <MESSAGE value="Sends implementation complete" />
     <MESSAGE value="headerbar completed" />
     <MESSAGE value="added the encoder" />
@@ -529,10 +536,18 @@
     <MESSAGE value="debugging a issue with gain labels" />
     <MESSAGE value="added a custom label widget for gains" />
     <MESSAGE value="changed many labels to fastlabels" />
-    <option name="LAST_COMMIT_MESSAGE" value="changed many labels to fastlabels" />
+    <MESSAGE value="first version (it still contains many bugs) of new strip table model" />
+    <option name="LAST_COMMIT_MESSAGE" value="first version (it still contains many bugs) of new strip table model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/stripTable.py</url>
+          <line>221</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

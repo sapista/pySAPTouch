@@ -124,6 +124,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.btn_rec.hide()
         self.btn_select.hide()
         self.btn_spill.hide()
+        self.btn_spill.set_active_state(False)
         self.lbl_strip_type.hide()
         self.lbl_title.hide()
         self.lbl_gain.hide()
@@ -194,6 +195,7 @@ class StripCtlWidget(customframewidget.CustomFrame):
         self.emit('rec_changed', self.ssid, self.rec)
 
     def spill_clicked(self, widget):
+        self.btn_spill.set_active_state(True)
         self.emit('spill_changed', self.ssid)
 
     def get_ssid(self):

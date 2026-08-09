@@ -30,12 +30,14 @@ class StripSelWidget(Gtk.EventBox):
         self.ibank_index = ibank_index #The position of the strip in a bank
         self.lbl_name = fastlabel.FastLabel( font_size = 14)
         self.lbl_name.set_text_color(1.0, 1.0, 1.0)
+        self.lbl_name.hide()
         self.inputs = 0
         self.outputs = 0
         self.isSend = isSend
         self.fader_value = None #Used only in send mode
         self.fader_gain_value = None  # Used only in send mode
         self.lbl_type = fastlabel.FastLabel( font_size = 13)
+        self.lbl_type.hide()
 
         #Waveform viewer
         self.meter = miniMeter.MiniMeter()
@@ -45,18 +47,22 @@ class StripSelWidget(Gtk.EventBox):
 
         if not self.isSend:
             self.LED_solo = LEDWidget.LEDWidget("Solo", "#00FF00")
+            self.LED_solo.hide()
             self.LED_solo.set_value(False)
             self.hbox_smr.pack_start(self.LED_solo, expand=True, fill=True, padding=0)
             self.LED_mute = LEDWidget.LEDWidget("Mute", "#FFFF00")
+            self.LED_mute.hide()
             self.LED_mute.set_value(False)
             self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
             self.LED_rec = LEDWidget.LEDWidget("Rec", "#FF0000")
+            self.LED_rec.hide()
             self.LED_rec.set_value(False)
             self.hbox_smr.pack_start(self.LED_rec, expand=True, fill=True, padding=0)
 
         else:
             #Using the mute LED as active, so it will work reversed (Mute = Active)
             self.LED_mute = LEDWidget.LEDWidget("Active", "#00FF00")
+            self.LED_mute.hide
             self.LED_mute.set_value(False)
             self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
 
@@ -67,7 +73,7 @@ class StripSelWidget(Gtk.EventBox):
             self.vbox.pack_start(self.meter, expand=True, fill=True, padding=0)
         self.vbox.pack_start(self.hbox_smr, expand=True, fill=True, padding=0)
 
-        self.MFrame = customframewidget.CustomFrame(StripEnum.Empty)
+        self.MFrame = customframewidget.CustomFrame(StripEnum.Empty, bGhost=True)
         self.set_type(StripEnum.Empty)  # This also sets the member var self.type
 
         self.MFrame.add(self.vbox)
@@ -80,7 +86,7 @@ class StripSelWidget(Gtk.EventBox):
         self.selected = False
 
     def button_press(self, widget, event):
-        if event.button == 1:
+        if event.button == 1 and self.ssid is not None:
             self.emit('strip_selected', self.ssid)
 
     def get_index(self):
@@ -100,6 +106,28 @@ class StripSelWidget(Gtk.EventBox):
 
     def get_bank_index(self):
         return self.ibank_index
+
+    def set_ssid(self, issid):
+        self.ssid = issid
+        if self.ssid is None:
+            self.MFrame.set_ghost(True)
+            self.lbl_name.hide()
+            self.lbl_type.hide()
+            if not self.isSend:
+                if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+                    self.LED_rec.hide()
+                self.LED_solo.hide()
+            self.LED_mute.hide()
+
+        else:
+            self.MFrame.set_ghost(False)
+            self.lbl_name.show()
+            self.lbl_type.show()
+            if not self.isSend:
+                if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+                    self.LED_rec.show()
+                self.LED_solo.show()
+            self.LED_mute.show()
 
     def set_type(self, istriptype):
         self.type = istriptype

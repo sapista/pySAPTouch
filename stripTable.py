@@ -48,7 +48,6 @@ class StripTable(Gtk.ScrolledWindow):
         self.current_selected_bank = None
         self.send_mode = is_send
         self.vca_mode = is_vca
-        self.number_of_active_strips = 0
 
         self.viewport_table = Gtk.Viewport()
         self.table = Gtk.Grid()
@@ -65,7 +64,7 @@ class StripTable(Gtk.ScrolledWindow):
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
         for i in range(0, max_strips):
-            self._append_strip(i+1)
+            self._append_strip()
         self._fill_strips()
 
         # Meters, global refresh timer
@@ -74,7 +73,7 @@ class StripTable(Gtk.ScrolledWindow):
             GLib.timeout_add(self.timeout_meter_interval, self.on_meter_refresh_timeout)
 
     def get_number_of_strips(self):
-        return self.number_of_active_strips
+        return len(self.strips_ssid_id_dict)
 
     def get_current_selected_strip_index(self):
         return self.current_selected_strip_widget
@@ -87,18 +86,16 @@ class StripTable(Gtk.ScrolledWindow):
     def get_strip_ssid(self, index):
         return self.strips_list_widgets[index].get_ssid()
 
-    #TODO error! in VCA ssid have no sense!
-    def _append_strip(self, ssid):
-        self.strips_ssid_id_dict[ssid] = len(self.strips_list_widgets)
+    def _append_strip(self):
         if self.send_mode:
             self.strips_list_widgets.append(StripSelWidget(len(self.strips_list_widgets),
-                                                           ssid,
+                                                           None, #TODO investigate how None is handled in the widget!
                                                            len(self.strips_list_widgets) // self.bank_size,
                                                            len(self.strips_list_widgets) % self.bank_size,
                                                            True))
         else:
             self.strips_list_widgets.append(StripSelWidget(len(self.strips_list_widgets),
-                                                                      ssid,
+                                                                      None,
                                                                       len(self.strips_list_widgets) // self.bank_size,
                                                                       len(self.strips_list_widgets) % self.bank_size,
                                                                       False))
@@ -109,26 +106,31 @@ class StripTable(Gtk.ScrolledWindow):
         (self.bank_strip_id_list[self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_bank()])[self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_bank_index()] = self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_index()
 
     def register_strip(self, ssid, name, type, mute, solo, rec, inputs, outputs):
-        if ssid in self.strips_ssid_id_dict:
-            idx = self.strips_ssid_id_dict[ssid]
-            self.strips_list_widgets[idx].set_type(type)
-            self.strips_list_widgets[idx].set_name(name)
-            self.strips_list_widgets[idx].set_solo(solo)
-            self.strips_list_widgets[idx].set_mute(mute)
-            self.strips_list_widgets[idx].set_rec(rec)
-            self.strips_list_widgets[idx].set_inputs_outputs( inputs, outputs)
-            self.strips_list_widgets[idx].show()
-            self.number_of_active_strips = self.number_of_active_strips + 1
+        self.strips_ssid_id_dict[ssid] = len(self.strips_ssid_id_dict)
+        idx = self.strips_ssid_id_dict[ssid]
+        self.strips_list_widgets[idx].set_ssid(ssid)
+        self.strips_list_widgets[idx].set_type(type)
+        self.strips_list_widgets[idx].set_name(name)
+        self.strips_list_widgets[idx].set_solo(solo)
+        self.strips_list_widgets[idx].set_mute(mute)
+        self.strips_list_widgets[idx].set_rec(rec)
+        self.strips_list_widgets[idx].set_inputs_outputs( inputs, outputs)
+        self.strips_list_widgets[idx].show()
+        for i in range(self.strips_list_widgets[idx].get_bank_index() + 1, self.bank_size):
+            padd_idx = idx + i - self.strips_list_widgets[idx].get_bank_index()
+            if padd_idx < len(self.strips_list_widgets):
+                self.strips_list_widgets[padd_idx].show()
 
-            if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
-                self.emit('bank_channel_ssid_name_changed', self.strips_list_widgets[idx].get_bank_index(), ssid, name)
+        if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
+            self.emit('bank_channel_ssid_name_changed', self.strips_list_widgets[idx].get_bank_index(), ssid, name)
 
     def clear_strips(self):
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
-        self.number_of_active_strips = 0
+        self.strips_ssid_id_dict = dict()
         for i in range(0,  len(self.strips_list_widgets)):
             self.strips_list_widgets[i].hide()
+            self.strips_list_widgets[i].set_ssid(None)
             self.strips_list_widgets[i].set_type(StripEnum.Empty)
             self.strips_list_widgets[i].set_name("")
             self.strips_list_widgets[i].set_solo(False)
@@ -146,9 +148,9 @@ class StripTable(Gtk.ScrolledWindow):
             self.strips_list_widgets[i].connect("strip_selected", self.on_strip_selected)
             self.strips_list_widgets[i].hide()
 
-        if self.number_of_active_strips < self.bank_size:
+        if len(self.strips_list_widgets) < self.bank_size:
             # Insert empty columns to fill at least self.bank_size columns, use and empty label to achive that
-            for i in range(self.number_of_active_strips, self.bank_size):
+            for i in range(len(self.strips_list_widgets), self.bank_size):
                 self.table.attach(Gtk.Label(), i, 0, 1, 1)
 
         if len(self.strips_list_widgets) > 0:
@@ -241,7 +243,7 @@ class StripTable(Gtk.ScrolledWindow):
                     for i in range(0, self.bank_size):
                         strip_index = (self.bank_strip_id_list[self.current_selected_bank])[i]
 
-                        if strip_index is not None:
+                        if strip_index is not None and self.strips_list_widgets[strip_index].get_ssid() is not None:
                             if self.strips_list_widgets[strip_index].get_bank_index() != i:
                                 exit("FATAL ERROR: bank index lost!")
 

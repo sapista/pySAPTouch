@@ -485,10 +485,6 @@ class ControllerGUI(Gtk.Window):
         self.LED_OSCconnection.set_value(True)
         self.LED_OSCconnection.set_label("OSC Online")
 
-        #TODO this is old, how to do with the new model?
-        #self.strip_table_tracks.fill_strips()
-        #self.strip_table_VCA.fill_strips()
-
         if self.bVCAmode:
             #VCA MODE
             self.strip_table_tracks.reset_current_selected_bank()
@@ -1169,10 +1165,10 @@ class ControllerGUI(Gtk.Window):
         self.eLbl_Sends = Gtk.Label()
         self.eLbl_Sends.set_markup("<span weight='bold' size='xx-large' color='white'>Sends</span>")
         self.eVBox_sends.pack_start(self.eLbl_Sends, expand=False, fill=False, padding=0)
-        self.sends_table = stripTable.StripTable(4, 20, None, True) #Limit to 20 channels of sends
-        self.sends_table.clear_strips() #TODO is needed? revise
 
-        for i in range(0, self.sends_table.get_number_of_strips()):
+        max_sends_controls = 20
+        self.sends_table = stripTable.StripTable(4, max_sends_controls, None, True) #Limit to 20 channels of sends
+        for i in range(0, max_sends_controls):
             self.sends_table.register_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
                                           False, False, False, 1, 1)
 
