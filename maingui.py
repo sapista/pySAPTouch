@@ -209,8 +209,11 @@ class ControllerGUI(Gtk.Window):
         if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
-                liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
-                liblo.send(self.target, "/strip/fader", selSSID, value)
+                #TODO testing new method
+                self.osc_send2ssid("/strip/fader/touch", selSSID, 1)
+                self.osc_send2ssid("/strip/fader", selSSID, value)
+                #liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
+                #liblo.send(self.target, "/strip/fader", selSSID, value)
         return True
 
     def fader_bank_mode_untouched(self, event, value):
@@ -220,30 +223,42 @@ class ControllerGUI(Gtk.Window):
                 if value & (1 << i):
                     selSSID = self.strips_list_selbank[i].get_ssid()
                     if selSSID is not None:
-                        liblo.send(self.target, "/strip/fader/touch", selSSID, 0)
+                        # TODO testing new method
+                        self.osc_send2ssid("/strip/fader/touch", selSSID, 0)
+                        #liblo.send(self.target, "/strip/fader/touch", selSSID, 0)
         return True
 
     def trim_single_mode_changed(self, event, value):
-        liblo.send(self.target, "/select/trimdB/touch", 1)
-        liblo.send(self.target, "/select/trimdB", value)
+        # TODO testing new method
+        self.osc_send2select("/select/trimdB/touch", 1)
+        self.osc_send2select("/select/trimdB", value)
+        #liblo.send(self.target, "/select/trimdB/touch", 1)
+        #liblo.send(self.target, "/select/trimdB", value)
         return True
 
     def trim_single_mode_untouched(self, event):
-        liblo.send(self.target, "/select/trimdB/touch", 0)
+        # TODO testing new method
+        self.osc_send2select("/select/trimdB/touch", 1)
+        #liblo.send(self.target, "/select/trimdB/touch", 0)
         return True
 
     def fader_single_mode_changed(self, event, value):
-        liblo.send(self.target, "/select/fader/touch", 1)
-        liblo.send(self.target, "/select/fader", value)
+        # TODO testing new method
+        self.osc_send2select("/select/fader/touch", 1)
+        self.osc_send2select("/select/fader", value)
+        #liblo.send(self.target, "/select/fader/touch", 1)
+        #liblo.send(self.target, "/select/fader", value)
         return True
 
     def fader_single_mode_untouched(self, event):
-        liblo.send(self.target, "/select/fader/touch", 0)
+        # TODO testing new method
+        self.osc_send2select("/select/fader/touch", 0)
+        #liblo.send(self.target, "/select/fader/touch", 0)
         return True
 
     def pan_pos_single_mode_changed(self, event, value):
         # TODO enable touch automation when available in Ardour
-        # liblo.send(self.target, "/select/pan_stereo_position/touch", 1)
+        # self.osc_send2select("/select/pan_stereo_position/touch", 1)
 
         # Make the fader sticky to the center point (0.5)
         corrected_pan_val = value
@@ -251,18 +266,19 @@ class ControllerGUI(Gtk.Window):
         if dist_2_center < 0.05:
             corrected_pan_val = 0.5
 
-        liblo.send(self.target, "/select/pan_stereo_position", corrected_pan_val)
+        self.osc_send2select("/select/pan_stereo_position", corrected_pan_val)
+
         return True
 
     def pan_pos_single_mode_untouched(self, event):
         # TODO enable touch automation when available in Ardour
-        # liblo.send(self.target, "/select/pan_stereo_position/touch", 0)
+        # self.osc_send2select("/select/pan_stereo_position/touch", 0)
         return True
 
     def pan_width_single_mode_changed(self, event, value):
         if self.ePanner.get_panner_has_width_control():
             # TODO enable touch automation when available in Ardour
-            # liblo.send(self.target, "/select/pan_stereo_width/touch", 1)
+            # self.osc_send2select( "/select/pan_stereo_width/touch", 1)
 
             #Prefer center point (0.5)
             corrected_pan_val = value
@@ -273,13 +289,13 @@ class ControllerGUI(Gtk.Window):
             #TODO I believe this is an ardour bug but pan must be sent between -1 and 1
             corrected_pan_val = corrected_pan_val * 2.0 - 1.0
 
-            liblo.send(self.target, "/select/pan_stereo_width", corrected_pan_val)
+            self.osc_send2select( "/select/pan_stereo_width", corrected_pan_val)
         return True
 
     def pan_width_single_mode_untouched(self, event):
         #if self.ePanner.get_panner_has_width_control():
             # TODO enable touch automation when available in Ardour
-            # liblo.send(self.target, "/select/pan_stereo_width/touch", 0)
+            # self.osc_send2select("/select/pan_stereo_width/touch", 0)
         return True
 
     def send_single_mode_changed(self, event, channel, value):
@@ -287,8 +303,8 @@ class ControllerGUI(Gtk.Window):
             selSSID = self.eSendsCtl[channel].get_sendID()
             if selSSID is not None:
                 # TODO enable touch automation when available in Ardour (Unhandled OSC message: /select/send/touch i:3 i:1)
-                #liblo.send(self.target, "/select/send/touch", selSSID, 1)
-                liblo.send(self.target, "/select/send_fader", selSSID, value)
+                #self.osc_send2ssid( "/select/send/touch", selSSID, 1)
+                self.osc_send2ssid( "/select/send_fader", selSSID, value)
             else:
                 #Restore fader to zero
                 self.faderCtl.move_single_send(channel, 0.0)
@@ -298,13 +314,14 @@ class ControllerGUI(Gtk.Window):
         selSSID = self.eSendsCtl[channel].get_sendID()
         # TODO enable touch automation when available in Ardour (Unhandled OSC message: /select/send/touch i:3 i:1)
         #if selSSID is not None:
-            #liblo.send(self.target, "/select/send/touch", selSSID, 0)
+            #self.osc_send2ssid( "/select/send/touch", selSSID, 0)
         return True
 
     def strip_select_changed(self, widget, issid):
         self.safe_strip_select(issid)
 
     def refresh_strip_list_ALL(self, widget):
+        self.bOSC_is_ready = False
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         #liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
 
@@ -315,6 +332,7 @@ class ControllerGUI(Gtk.Window):
 
     def btn_VCA_mode_clicked(self, widget):
         if self.bVCAmode is not True:
+            self.bOSC_is_ready = False
             self.strip_table.set_vca_mode(True)
             self.bSpill = False
             self.bVCAmode = True
@@ -326,6 +344,7 @@ class ControllerGUI(Gtk.Window):
 
     def btn_TrkBus_mode_clicked(self, widget):
         if self.bVCAmode is True or self.bSpill is True:
+            self.bOSC_is_ready = False
             self.strip_table.set_vca_mode(False)
             self.bSpill = False
             self.bVCAmode = False
@@ -378,6 +397,7 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/strip/recenable", ichannel, int(bvalue))
 
     def bank_spill_clicked(self, widget, ichannel):
+        self.bOSC_is_ready = False
         self.strip_table.set_vca_mode(False)
         self.bSpill = True
         self.bVCAmode = False
@@ -464,6 +484,7 @@ class ControllerGUI(Gtk.Window):
         self.watchdog.set_OSC_online(True)
         self.LED_OSCconnection.set_value(True)
         self.LED_OSCconnection.set_label("OSC Online")
+        self.bOSC_is_ready = True
 
         if self.bVCAmode:
             #VCA MODE
@@ -684,6 +705,14 @@ class ControllerGUI(Gtk.Window):
         self.refresh_strip_list_ALL(None)
         self.watchdog.start()
 
+    def osc_send2ssid(self, command, ssid, value):
+        if self.bOSC_is_ready:
+            liblo.send(self.target, command, ssid, value)
+
+    def osc_send2select(self, command, value):
+        if self.bOSC_is_ready:
+            liblo.send(self.target, command, value)
+
     def select_send_enable_osc_changed(self, widget, send_id, send_enabled):
         self.sends_table.set_mute(send_id, send_enabled)
 
@@ -735,6 +764,7 @@ class ControllerGUI(Gtk.Window):
         return self.bSpill
 
     def __init__(self):
+        self.bOSC_is_ready = False #Block OSC sending if not ready and fully configured
         self.bVCAmode = False #Controls if its showing track/bus or VCA's
         self.bSpill = False #Signal when in spill mode
         self.iLastSelectedTrackBus_ssid = None
