@@ -324,7 +324,7 @@ class ControllerGUI(Gtk.Window):
         self.bOSC_is_ready = False
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         #liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
-
+        self.strip_table.clear_strips()
         liblo.send(self.target, "/set_surface", 0, 7, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
@@ -338,7 +338,7 @@ class ControllerGUI(Gtk.Window):
             self.bVCAmode = True
             self.btn_activate_VCA_mode.set_active_state(True)
             self.btn_activate_TrkBus_mode.set_active_state(False)
-
+            self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 16)
             self.send_osc_refresh_strip_list()
 
@@ -350,7 +350,7 @@ class ControllerGUI(Gtk.Window):
             self.bVCAmode = False
             self.btn_activate_VCA_mode.set_active_state(False)
             self.btn_activate_TrkBus_mode.set_active_state(True)
-
+            self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 7)
             self.send_osc_refresh_strip_list()
 
@@ -404,6 +404,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_activate_VCA_mode.set_active_state(False)
         self.btn_activate_TrkBus_mode.set_active_state(True)
 
+        self.strip_table.clear_strips()
         liblo.send(self.target, "/strip/spill", ichannel)
         self.send_osc_refresh_strip_list()
 
@@ -533,8 +534,7 @@ class ControllerGUI(Gtk.Window):
         #self.send_osc_refresh_strip_list()
 
     def send_osc_refresh_strip_list(self):
-        self.strip_table.clear_strips()
-        GLib.timeout_add(200, self.osc_exec_list) #delay the /list command to give ardour time to process the /set_surface
+        GLib.timeout_add(50, self.osc_exec_list) #delay the /list command to give ardour time to process the /set_surface
 
     def osc_exec_list(self):
         liblo.send(self.target, "/strip/list")
