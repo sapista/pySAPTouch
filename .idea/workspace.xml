@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="bug fixes for the new strip table model">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="recover OSC feedback value of 24779">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO" beforeDir="false" afterPath="$PROJECT_DIR$/TODO" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -499,7 +503,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786287334175</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="recover OSC feedback value of 24779">
+      <option name="closed" value="true" />
+      <created>1786288334234</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1786288334234</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -515,7 +527,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="headerbar completed" />
     <MESSAGE value="added the encoder" />
     <MESSAGE value="fix trim fader position on edit mode" />
     <MESSAGE value="fix some bugs and added VCA mode, started to work with Ardour 8.12" />
@@ -540,17 +551,11 @@
     <MESSAGE value="changed many labels to fastlabels" />
     <MESSAGE value="first version (it still contains many bugs) of new strip table model" />
     <MESSAGE value="bug fixes for the new strip table model" />
-    <option name="LAST_COMMIT_MESSAGE" value="bug fixes for the new strip table model" />
+    <MESSAGE value="recover OSC feedback value of 24779" />
+    <option name="LAST_COMMIT_MESSAGE" value="recover OSC feedback value of 24779" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/stripTable.py</url>
-          <line>221</line>
-          <option name="timeStamp" value="20" />
-        </line-breakpoint>
-      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

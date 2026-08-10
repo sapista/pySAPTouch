@@ -37,7 +37,7 @@ class StripTable(Gtk.ScrolledWindow):
                                  (int,))
     }
 
-    def __init__(self, bank_size, max_strips = 120, meter_pixels_x_seconds = None, is_send = False, is_vca = False):
+    def __init__(self, bank_size, max_strips = 120, meter_pixels_x_seconds = None, is_send = False):
         super(StripTable, self).__init__()
 
         self.strips_list_widgets = [] #Stores the list of select widgets
@@ -47,7 +47,7 @@ class StripTable(Gtk.ScrolledWindow):
         self.current_selected_strip_widget = None
         self.current_selected_bank = None
         self.send_mode = is_send
-        self.vca_mode = is_vca
+        self.vca_mode = False
 
         self.viewport_table = Gtk.Viewport()
         self.table = Gtk.Grid()
@@ -106,6 +106,9 @@ class StripTable(Gtk.ScrolledWindow):
         (self.bank_strip_id_list[self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_bank()])[self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_bank_index()] = self.strips_list_widgets[len(self.strips_list_widgets) - 1].get_index()
 
     def register_strip(self, ssid, name, type, mute, solo, rec, inputs, outputs):
+        if ssid in self.strips_ssid_id_dict:
+            return #Do not register a ssid twice
+
         self.strips_ssid_id_dict[ssid] = len(self.strips_ssid_id_dict)
         idx = self.strips_ssid_id_dict[ssid]
         self.strips_list_widgets[idx].set_ssid(ssid)
@@ -156,12 +159,22 @@ class StripTable(Gtk.ScrolledWindow):
         if len(self.strips_list_widgets) > 0:
             self.table.show()
 
+    def get_strip_name(self,ssid):
+        if ssid in self.strips_ssid_id_dict:
+            idx = self.strips_ssid_id_dict[ssid]
+            return  self.strips_list_widgets[idx].get_name()
+        else:
+            return None
+
     def set_strip_name(self, ssid, name):
         if ssid in self.strips_ssid_id_dict:
             idx = self.strips_ssid_id_dict[ssid]
             self.strips_list_widgets[idx].set_name(name)
             if self.current_selected_bank == self.strips_list_widgets[idx].get_bank():
                 self.emit('bank_channel_ssid_name_changed', self.strips_list_widgets[idx].get_bank_index(), ssid, name)
+
+    def set_vca_mode(self, bVcaMode):
+        self.vca_mode = bVcaMode
 
     def set_fader(self, ssid, value):
         if ssid in self.strips_ssid_id_dict:

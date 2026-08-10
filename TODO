@@ -74,6 +74,9 @@ dump_osc 8000
 #Config surface
 send_osc osc.udp://127.0.0.1:3819 /set_surface 0 23 24771 2 0
 
+ #24643 --> no heartbeat , no metering
+ send_osc osc.udp://127.0.0.1:3819 /set_surface 0 7 24643 2 0
+
 #Select a strip
 send_osc osc.udp://127.0.0.1:3819 /strip/select 1 1
 

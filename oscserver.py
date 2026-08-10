@@ -31,6 +31,9 @@ class OSCServer(GObject.GObject):
         'list_reply_end': (GObject.SIGNAL_RUN_LAST, None,
                            ()),
 
+        'strip_list_changed': (GObject.SIGNAL_RUN_LAST, None,
+                           ()),
+
         'fader_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (int, float)),
 
@@ -165,6 +168,7 @@ class OSCServer(GObject.GObject):
         self.add_method("/strip/recenable", 'if', self.rec_callback)
         self.add_method("/strip/select", 'if', self.select_callback)
         self.add_method("/strip/meter", 'if', self.meter_callback)
+        self.add_method("/strip/list", None, self.strip_list_callback)
         self.add_method("/reply", 'ssiiiiii', self.reply_callback_Track)
         self.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
         self.add_method("/reply", 'shhi', self.reply_callback_EndRoute)
@@ -262,6 +266,9 @@ class OSCServer(GObject.GObject):
         sendroute, framerate, lastframenum, monitorsection = args
         if sendroute == "end_route_list":
             GObject.idle_add(self.emit, 'list_reply_end')
+
+    def strip_list_callback(self):
+        GObject.idle_add(self.emit, 'strip_list_changed')
 
     def smpte_position_callback(self, path, args):
         GObject.idle_add(self.emit, 'smpte_changed', args)
