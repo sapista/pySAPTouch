@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="block mcu osc sends during set_surface">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="add delay for the /list commands">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
     </list>
@@ -515,7 +515,23 @@
       <option name="project" value="LOCAL" />
       <updated>1786375948505</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="commented out srtip name change, it may be de freeze">
+      <option name="closed" value="true" />
+      <created>1786377117173</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1786377117173</updated>
+    </task>
+    <task id="LOCAL-00047" summary="add delay for the /list commands">
+      <option name="closed" value="true" />
+      <created>1786377367288</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1786377367288</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -531,8 +547,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="fix trim fader position on edit mode" />
-    <MESSAGE value="fix some bugs and added VCA mode, started to work with Ardour 8.12" />
     <MESSAGE value="fix some bugs and VCA mode almost done" />
     <MESSAGE value="fixed sends" />
     <MESSAGE value="Added the avr firmware as a subfolder in this project. The firmware has been migrated to arduino ide" />
@@ -556,7 +570,9 @@
     <MESSAGE value="bug fixes for the new strip table model" />
     <MESSAGE value="recover OSC feedback value of 24779" />
     <MESSAGE value="block mcu osc sends during set_surface" />
-    <option name="LAST_COMMIT_MESSAGE" value="block mcu osc sends during set_surface" />
+    <MESSAGE value="commented out srtip name change, it may be de freeze" />
+    <MESSAGE value="add delay for the /list commands" />
+    <option name="LAST_COMMIT_MESSAGE" value="add delay for the /list commands" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
