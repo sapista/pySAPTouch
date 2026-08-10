@@ -534,7 +534,11 @@ class ControllerGUI(Gtk.Window):
 
     def send_osc_refresh_strip_list(self):
         self.strip_table.clear_strips()
+        GLib.timeout_add(200, self.osc_exec_list) #delay the /list command to give ardour time to process the /set_surface
+
+    def osc_exec_list(self):
         liblo.send(self.target, "/strip/list")
+        return False
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
