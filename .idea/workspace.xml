@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="new and simplified striptable model">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="block mcu osc sends during set_surface">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
     </list>
@@ -507,7 +507,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786288334234</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="block mcu osc sends during set_surface">
+      <option name="closed" value="true" />
+      <created>1786375948504</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1786375948505</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -523,7 +531,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added the encoder" />
     <MESSAGE value="fix trim fader position on edit mode" />
     <MESSAGE value="fix some bugs and added VCA mode, started to work with Ardour 8.12" />
     <MESSAGE value="fix some bugs and VCA mode almost done" />
@@ -548,7 +555,8 @@
     <MESSAGE value="first version (it still contains many bugs) of new strip table model" />
     <MESSAGE value="bug fixes for the new strip table model" />
     <MESSAGE value="recover OSC feedback value of 24779" />
-    <option name="LAST_COMMIT_MESSAGE" value="recover OSC feedback value of 24779" />
+    <MESSAGE value="block mcu osc sends during set_surface" />
+    <option name="LAST_COMMIT_MESSAGE" value="block mcu osc sends during set_surface" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

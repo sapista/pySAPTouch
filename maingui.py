@@ -679,6 +679,8 @@ class ControllerGUI(Gtk.Window):
         # We do not know its just a name chance of a track or a strip re-arrangement, so better to refresh all
         #self.send_osc_refresh_strip_list()
 
+        #TODO all commented out this may be the bug!
+        """  
         #TODO think about this...
         curr_name = self.strip_table.get_strip_name(ssid)
         if curr_name is None:
@@ -687,6 +689,7 @@ class ControllerGUI(Gtk.Window):
         else:
             # print("strip_name_osc_changed ssid '%d'  name '%s'" % (ssid, name))
             self.strip_table.set_strip_name(ssid, name)
+        """
 
     def osc_heartbeat_tick(self, widget):
         if not self.watchdog.get_OSC_online():
@@ -706,7 +709,7 @@ class ControllerGUI(Gtk.Window):
         self.watchdog.start()
 
     def osc_send2ssid(self, command, ssid, value):
-        if self.bOSC_is_ready:
+        if self.bOSC_is_ready and self.strip_table.check_if_ssid_exists(ssid):
             liblo.send(self.target, command, ssid, value)
 
     def osc_send2select(self, command, value):
