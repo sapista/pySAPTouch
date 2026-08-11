@@ -118,6 +118,7 @@ class StripSelWidget(Gtk.EventBox):
                     self.LED_rec.hide()
                 self.LED_solo.hide()
             self.LED_mute.hide()
+            self.meter.hide()
 
         else:
             self.MFrame.set_ghost(False)
@@ -128,6 +129,7 @@ class StripSelWidget(Gtk.EventBox):
                     self.LED_rec.show()
                 self.LED_solo.show()
             self.LED_mute.show()
+            self.meter.show()
 
     def set_type(self, istriptype):
         self.type = istriptype
@@ -222,6 +224,8 @@ class StripSelWidget(Gtk.EventBox):
 
     def hide_child(self):
         self.MFrame.hide()
+        self.meter.hide()
 
     def show_child(self):
         self.MFrame.show()
+        self.meter.show()

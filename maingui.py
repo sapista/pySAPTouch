@@ -327,8 +327,7 @@ class ControllerGUI(Gtk.Window):
         self.strip_table.clear_strips()
         liblo.send(self.target, "/set_surface", 0, 7, 24779, 2, 0)  # Check Ardour OSC preferences for reference of these values
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
-
-        self.send_osc_refresh_strip_list()
+        liblo.send(self.target, "/strip/list")
 
     def btn_VCA_mode_clicked(self, widget):
         if self.bVCAmode is not True:
@@ -340,7 +339,7 @@ class ControllerGUI(Gtk.Window):
             self.btn_activate_TrkBus_mode.set_active_state(False)
             self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 16)
-            self.send_osc_refresh_strip_list()
+            liblo.send(self.target, "/strip/list")
 
     def btn_TrkBus_mode_clicked(self, widget):
         if self.bVCAmode is True or self.bSpill is True:
@@ -352,7 +351,7 @@ class ControllerGUI(Gtk.Window):
             self.btn_activate_TrkBus_mode.set_active_state(True)
             self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 7)
-            self.send_osc_refresh_strip_list()
+            liblo.send(self.target, "/strip/list")
 
     def bank_channel_select_changed(self, widget, index, value):
         self.strips_list_selbank[index].set_select(value)
@@ -406,7 +405,7 @@ class ControllerGUI(Gtk.Window):
 
         self.strip_table.clear_strips()
         liblo.send(self.target, "/strip/spill", ichannel)
-        self.send_osc_refresh_strip_list()
+        liblo.send(self.target, "/strip/list")
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
@@ -532,13 +531,6 @@ class ControllerGUI(Gtk.Window):
         #TODO its refresehn non stop! each time a track is selected ardour sends it! pffff
         #Refresh current strip list
         #self.send_osc_refresh_strip_list()
-
-    def send_osc_refresh_strip_list(self):
-        GLib.timeout_add(50, self.osc_exec_list) #delay the /list command to give ardour time to process the /set_surface
-
-    def osc_exec_list(self):
-        liblo.send(self.target, "/strip/list")
-        return False
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
