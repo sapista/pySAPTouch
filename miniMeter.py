@@ -11,17 +11,24 @@ class MiniMeter(Gtk.DrawingArea):
         self.connect("size-allocate", self.on_size_allocate)
         self.set_size_request(-1, 30)
         self.next_value = 0
-        self.buffer = [0.0] * 10; #Starting with some arbitrary value
+        self.buffer = [0.0] * 10 #Starting with some arbitrary value
 
     def set_value(self, value):
-        self.next_value = max(self.next_value, value)
+        self.next_value = value
+
+    def clear_buffer(self):
+        self.next_value = 0
+        for i in range(0, len(self.buffer) - 1):
+            self.buffer[i] = 0.0
+
+        #redraw
+        self.queue_draw()
 
     def refresh(self):
         #Shift register
         for i in range(0, len(self.buffer) - 1):
             self.buffer[i] = self.buffer[i+1]
         self.buffer[len(self.buffer)-1] = self.next_value
-        self.next_value = self.next_value * 0.7 #fast and simple decay
 
         #redraw
         self.queue_draw()

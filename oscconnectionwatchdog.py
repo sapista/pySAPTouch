@@ -5,7 +5,7 @@ class OSCConnectionWatchdog:
 		"""
 		:param callback: Function to call when the watchdog expires
 		"""
-		self.timeout_seconds_connected_mode = 5000 # 5 seconds
+		self.timeout_seconds_connected_mode = 10000 # 10 seconds
 		self.timeout_seconds_offline_mode = 2000 #When non-connected will trigger the timer more often
 		self.callback = callback
 		self._timer_id = None

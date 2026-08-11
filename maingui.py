@@ -327,8 +327,8 @@ class ControllerGUI(Gtk.Window):
         self.strip_table.clear_strips()
 
         # Check Ardour OSC preferences for reference of these values
-        #liblo.send(self.target, "/set_surface", 0, 7, 24779, 2, 0)
-        liblo.send(self.target, "/set_surface", 0, 7, 24651, 2, 0) #Meters disabled
+        liblo.send(self.target, "/set_surface", 0, 7, 24779, 2, 0)
+        #liblo.send(self.target, "/set_surface", 0, 7, 24651, 2, 0) #Meters disabled
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
         self.send_osc_refresh_strip_list()

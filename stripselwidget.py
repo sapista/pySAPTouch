@@ -28,7 +28,7 @@ class StripSelWidget(Gtk.EventBox):
         self.ssid = issid #The Ardour ssid
         self.ibank = ibank #The bank index at which this strip belongs
         self.ibank_index = ibank_index #The position of the strip in a bank
-        self.lbl_name = fastlabel.FastLabel( font_size = 14)
+        self.lbl_name = fastlabel.FastLabel( font_size = 16)
         self.lbl_name.set_text_color(1.0, 1.0, 1.0)
         self.lbl_name.hide()
         self.inputs = 0
@@ -36,7 +36,7 @@ class StripSelWidget(Gtk.EventBox):
         self.isSend = isSend
         self.fader_value = None #Used only in send mode
         self.fader_gain_value = None  # Used only in send mode
-        self.lbl_type = fastlabel.FastLabel( font_size = 13)
+        self.lbl_type = fastlabel.FastLabel( font_size = 12)
         self.lbl_type.hide()
 
         #Waveform viewer
@@ -67,10 +67,10 @@ class StripSelWidget(Gtk.EventBox):
             self.hbox_smr.pack_start(self.LED_mute, expand=True, fill=True, padding=0)
 
         self.vbox = Gtk.VBox()
-        self.vbox.pack_start(self.lbl_name, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(self.lbl_name, expand=True, fill=True, padding=4)
         if not isSend:  # We do not need label for track type and meters on sends
-            self.vbox.pack_start(self.lbl_type, expand=True, fill=True, padding=0)
-            self.vbox.pack_start(self.meter, expand=True, fill=True, padding=0)
+            self.vbox.pack_start(self.lbl_type, expand=True, fill=True, padding=2)
+            self.vbox.pack_start(self.meter, expand=True, fill=True, padding=2)
         self.vbox.pack_start(self.hbox_smr, expand=True, fill=True, padding=0)
 
         self.MFrame = customframewidget.CustomFrame(StripEnum.Empty, bGhost=True)
@@ -119,7 +119,6 @@ class StripSelWidget(Gtk.EventBox):
                 self.LED_solo.hide()
             self.LED_mute.hide()
             self.meter.hide()
-            #self.meter.clear() #TODO implemnt a meter clear method! or consider remove meters
 
         else:
             self.MFrame.set_ghost(False)
@@ -130,6 +129,7 @@ class StripSelWidget(Gtk.EventBox):
                     self.LED_rec.show()
                 self.LED_solo.show()
             self.LED_mute.show()
+            self.meter.clear_buffer()
             self.meter.show()
 
     def set_type(self, istriptype):
