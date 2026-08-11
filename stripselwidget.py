@@ -119,6 +119,7 @@ class StripSelWidget(Gtk.EventBox):
                 self.LED_solo.hide()
             self.LED_mute.hide()
             self.meter.hide()
+            #self.meter.clear() #TODO implemnt a meter clear method! or consider remove meters
 
         else:
             self.MFrame.set_ghost(False)

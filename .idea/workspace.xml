@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="first clear the strip table, then call set_surface to avoid unwanted actions">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="fix meters hide()&#10;back to non timed /strip/list">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -258,14 +259,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1597075612246</updated>
-    </task>
-    <task id="LOCAL-00014" summary="fix some bugs and added VCA mode, started to work with Ardour 8.12">
-      <option name="closed" value="true" />
-      <created>1783419424273</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1783419424274</updated>
     </task>
     <task id="LOCAL-00015" summary="fix some bugs and VCA mode almost done">
       <option name="closed" value="true" />
@@ -547,7 +540,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786377857160</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="fix meters hide()&#10;back to non timed /strip/list">
+      <option name="closed" value="true" />
+      <created>1786434276696</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1786434276697</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -563,7 +564,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="fixed sends" />
     <MESSAGE value="Added the avr firmware as a subfolder in this project. The firmware has been migrated to arduino ide" />
     <MESSAGE value="completing TODO's" />
     <MESSAGE value="completed work in panners" />
@@ -588,7 +588,8 @@
     <MESSAGE value="commented out srtip name change, it may be de freeze" />
     <MESSAGE value="add delay for the /list commands" />
     <MESSAGE value="first clear the strip table, then call set_surface to avoid unwanted actions" />
-    <option name="LAST_COMMIT_MESSAGE" value="first clear the strip table, then call set_surface to avoid unwanted actions" />
+    <MESSAGE value="fix meters hide()&#10;back to non timed /strip/list" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix meters hide()&#10;back to non timed /strip/list" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
