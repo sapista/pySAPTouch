@@ -1,4 +1,11 @@
+import sys
+
 from gi.repository import GLib, Gtk
+
+def is_debug_mode():
+	# Checks standard trace or common IDE debugging modules in memory
+	debugger_modules = {"pydevd", "debugpy", "pudb", "ipdb"}
+	return sys.gettrace() is not None or any(mod in sys.modules for mod in debugger_modules)
 
 class OSCConnectionWatchdog:
 	def __init__(self, callback):
@@ -21,8 +28,8 @@ class OSCConnectionWatchdog:
 		if self.bOnline:
 			timeout = self.timeout_seconds_connected_mode
 
-		#TODO enable after debug
-		#self._timer_id = GLib.timeout_add(timeout, self._on_timeout)
+		if not is_debug_mode():
+			self._timer_id = GLib.timeout_add(timeout, self._on_timeout)
 
 	def reset(self):
 		"""Alias for start() — 'kicking' or feeding the watchdog."""

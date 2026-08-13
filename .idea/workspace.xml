@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="better meter">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="redesign com model, prof of concept">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/customframewidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/customframewidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/oscconnectionwatchdog.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscconnectionwatchdog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTypes.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTypes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripctlwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripctlwidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -266,14 +258,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1597075612246</updated>
-    </task>
-    <task id="LOCAL-00017" summary="Added the avr firmware as a subfolder in this project. The firmware has been migrated to arduino ide">
-      <option name="closed" value="true" />
-      <created>1783668769223</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1783668769223</updated>
     </task>
     <task id="LOCAL-00018" summary="completing TODO's">
       <option name="closed" value="true" />
@@ -555,7 +539,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786438232672</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="redesign com model, prof of concept">
+      <option name="closed" value="true" />
+      <created>1786620006447</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1786620006447</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -571,7 +563,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="completed work in panners" />
     <MESSAGE value="working on encoder" />
     <MESSAGE value="Encoder fully working" />
     <MESSAGE value="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate" />
@@ -596,7 +587,8 @@
     <MESSAGE value="fix meters hide()&#10;back to non timed /strip/list" />
     <MESSAGE value="timed /strip/lista again&#10;test disabling metering" />
     <MESSAGE value="better meter" />
-    <option name="LAST_COMMIT_MESSAGE" value="better meter" />
+    <MESSAGE value="redesign com model, prof of concept" />
+    <option name="LAST_COMMIT_MESSAGE" value="redesign com model, prof of concept" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
