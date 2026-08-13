@@ -111,8 +111,8 @@ class StripCtlWidget(customframewidget.CustomFrame):
 
         # Set strip type label
         dirstriptype = {StripEnum.Empty: '',
-                        StripEnum.AudioTrack: 'Audio Track',
-                        StripEnum.AudioBus: 'Audio Bus',
+                        StripEnum.Track: 'Audio Track',
+                        StripEnum.Bus: 'Audio Bus',
                         StripEnum.MidiTrack: 'Midi Track',
                         StripEnum.MidiBus: 'Midi Bus',
                         StripEnum.AuxBus: 'Aux Bus',
@@ -136,12 +136,12 @@ class StripCtlWidget(customframewidget.CustomFrame):
             self.lbl_title.show()
             self.lbl_gain.show()
 
-        if self.type is StripEnum.AudioTrack or  self.type is StripEnum.MidiTrack:
+        if self.type is StripEnum.Track or  self.type is StripEnum.MidiTrack:
             self.btn_rec.show()
             self.btn_edit.show()
             self.btn_select.show()
 
-        if self.type is StripEnum.AudioBus or self.type is StripEnum.MidiBus:
+        if self.type is StripEnum.Bus or self.type is StripEnum.MidiBus:
             self.btn_edit.show()
             self.btn_select.show()
 

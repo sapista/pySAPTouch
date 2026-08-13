@@ -18,8 +18,8 @@ class CustomFrame(Gtk.Bin):
 
         #Set strip color
         self.dirstripcolor = {StripEnum.Empty: '#353535',
-                        StripEnum.AudioTrack: '#304057',
-                        StripEnum.AudioBus: '#20242A',
+                        StripEnum.Track: '#304057',
+                        StripEnum.Bus: '#20242A',
                         StripEnum.MidiTrack: '#474F3F',
                         StripEnum.MidiBus: '#353B2F',
                         StripEnum.AuxBus: '#496183',

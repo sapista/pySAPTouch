@@ -321,21 +321,19 @@ class ControllerGUI(Gtk.Window):
         self.safe_strip_select(issid)
 
     def refresh_strip_list_ALL(self, widget):
-        self.bOSC_is_ready = False
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         #liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)
         self.strip_table.clear_strips()
 
         # Check Ardour OSC preferences for reference of these values
-        liblo.send(self.target, "/set_surface", 0, 7, 24779, 2, 0)
+        liblo.send(self.target, "/set_surface", self.number_of_strips_per_page, 7, 24779, 2, 0)
+
         #liblo.send(self.target, "/set_surface", 0, 7, 24651, 2, 0) #Meters disabled
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
-        self.send_osc_refresh_strip_list()
 
     def btn_VCA_mode_clicked(self, widget):
         if self.bVCAmode is not True:
-            self.bOSC_is_ready = False
             self.strip_table.set_vca_mode(True)
             self.bSpill = False
             self.bVCAmode = True
@@ -343,11 +341,9 @@ class ControllerGUI(Gtk.Window):
             self.btn_activate_TrkBus_mode.set_active_state(False)
             self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 16)
-            self.send_osc_refresh_strip_list()
 
     def btn_TrkBus_mode_clicked(self, widget):
         if self.bVCAmode is True or self.bSpill is True:
-            self.bOSC_is_ready = False
             self.strip_table.set_vca_mode(False)
             self.bSpill = False
             self.bVCAmode = False
@@ -355,7 +351,6 @@ class ControllerGUI(Gtk.Window):
             self.btn_activate_TrkBus_mode.set_active_state(True)
             self.strip_table.clear_strips()
             liblo.send(self.target, "/set_surface/strip_types", 7)
-            self.send_osc_refresh_strip_list()
 
     def bank_channel_select_changed(self, widget, index, value):
         self.strips_list_selbank[index].set_select(value)
@@ -400,7 +395,6 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/strip/recenable", ichannel, int(bvalue))
 
     def bank_spill_clicked(self, widget, ichannel):
-        self.bOSC_is_ready = False
         self.strip_table.set_vca_mode(False)
         self.bSpill = True
         self.bVCAmode = False
@@ -409,7 +403,9 @@ class ControllerGUI(Gtk.Window):
 
         self.strip_table.clear_strips()
         liblo.send(self.target, "/strip/spill", ichannel)
-        self.send_osc_refresh_strip_list()
+
+        #Ensuer every spill selects the first ssid in its spill group
+        self.safe_strip_select(1)  #TODO test this with real ethernet com, maybe the lag screws it!
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
@@ -447,12 +443,9 @@ class ControllerGUI(Gtk.Window):
 
                 self.eLbl_ssid.set_markup("<span weight='bold' size='xx-large' color='white'>("+str(ichannel)+")</span>")
 
-                # Query sends, instead of quering just hide all strips and let each send command to show its strip
-                for i in range(0, self.sends_table.get_number_of_strips()):
-                    self.sends_table.hide_strip(i + 1)
-                    self.sends_table.set_strip_name(self.sends_table.get_strip_ssid(i), "") #Using empty name to hide unused sends
-
-                self.sends_table.strip_select(1,True) #Ensuer to start always selecting the first bank
+                # Prepare sends table
+                self.sends_table.clear_strips()
+                self.sends_table.strip_select(1, True)  # Ensure to start always selecting the first row
 
         if bvalue:
             self.iLastSelectedTrackBus_ssid = ichannel
@@ -477,18 +470,13 @@ class ControllerGUI(Gtk.Window):
         self.btn_loop.set_image(self.btn_loop_WhiteIcon)
         return True
 
-    def list_osc_reply_track(self, widget, ssid, name, type, mute, solo, rec, inputs, outputs):
-        self.strip_table.register_strip(ssid, name, type, mute, solo, rec, inputs, outputs)
-
-    def list_osc_reply_bus(self, widget, ssid, name, type, mute, solo, inputs, outputs):
-        self.strip_table.register_strip(ssid, name, type, mute, solo, None, inputs, outputs)
-
+    #TODO remove this!
     def list_osc_reply_end(self, widget):
         #Connected, set watchdog
-        self.watchdog.set_OSC_online(True)
+        #self.watchdog.set_OSC_online(True) #TODO can be safely removed, now is in the heartbit
         self.LED_OSCconnection.set_value(True)
         self.LED_OSCconnection.set_label("OSC Online")
-        self.bOSC_is_ready = True
+        #self.bOSC_is_ready = True #TODO remove
 
         if self.bVCAmode:
             #VCA MODE
@@ -525,24 +513,6 @@ class ControllerGUI(Gtk.Window):
                 #Return to VCA mode
                 self.bVCAmode = False
                 self.btn_VCA_mode_clicked(None)
-
-    #Event from Ardour, strip list changed (added or removed track/bus)
-    def list_osc_changed(self, widget):
-        if self.strip_table.get_number_of_strips() == 0:
-            return #Avoid doing anything if my table is empty
-
-        print("DBG: Strip list changed event!")
-        #TODO its refresehn non stop! each time a track is selected ardour sends it! pffff
-        #Refresh current strip list
-        #self.send_osc_refresh_strip_list()
-
-    def send_osc_refresh_strip_list(self):
-        GLib.timeout_add(100, self.osc_exec_list) #delay the /list command to give ardour time to process the /set_surface
-        #TODO add some visual effect?
-
-    def osc_exec_list(self):
-        liblo.send(self.target, "/strip/list")
-        return False
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -657,7 +627,10 @@ class ControllerGUI(Gtk.Window):
         self.faderCtl.move_single_pan_width(value)
         self.ePanner.set_panner_width(value)
 
-    def select_panner_width_control_osc_changed(self, widget, value):
+    def select_panner_width_control_osc_changed(self, widget, ssid, value):
+        # this is how to distinguish a VCA from a BUS! VCA will not call this!
+        self.strip_table.has_panner(ssid)
+
         self.ePanner.set_panner_has_width_control(value)
         if not value:
             self.faderCtl.move_single_pan_width(0) #Force fader to zero to disable width control
@@ -678,32 +651,16 @@ class ControllerGUI(Gtk.Window):
 
     def select_send_name_osc_changed(self, widget, send_id, send_name):
         self.sends_table.set_strip_name(send_id, send_name)
-        self.sends_table.show_strip(send_id)
 
     def strip_name_osc_changed(self, widget, ssid, name):
-        if self.strip_table.get_number_of_strips() == 0:
-            return
-
-        # We do not know its just a name chance of a track or a strip re-arrangement, so better to refresh all
-        #self.send_osc_refresh_strip_list()
-
-        #TODO all commented out this may be the bug!
-        """  
-        #TODO think about this...
-        curr_name = self.strip_table.get_strip_name(ssid)
-        if curr_name is None:
-            #Strip added so refresh the list
-            self.send_osc_refresh_strip_list()
-        else:
-            # print("strip_name_osc_changed ssid '%d'  name '%s'" % (ssid, name))
-            self.strip_table.set_strip_name(ssid, name)
-        """
+        #print("strip_name_osc_changed ssid '%d'  name '%s'" % (ssid, name))
+        self.strip_table.set_strip_name(ssid, name)
 
     def osc_heartbeat_tick(self, widget):
-        if not self.watchdog.get_OSC_online():
-            return
+        self.watchdog.set_OSC_online(True)
         self.watchdog.reset()
         self.LED_OSCconnection.set_value(not self.LED_OSCconnection.get_value())
+        self.LED_OSCconnection.set_label("OSC Online")
 
     def on_watchdog_expired(self):
         if self.watchdog.get_OSC_online():
@@ -717,12 +674,11 @@ class ControllerGUI(Gtk.Window):
         self.watchdog.start()
 
     def osc_send2ssid(self, command, ssid, value):
-        if self.bOSC_is_ready and self.strip_table.check_if_ssid_exists(ssid):
+        if self.strip_table.check_if_ssid_exists(ssid):
             liblo.send(self.target, command, ssid, value)
 
     def osc_send2select(self, command, value):
-        if self.bOSC_is_ready:
-            liblo.send(self.target, command, value)
+        liblo.send(self.target, command, value)
 
     def select_send_enable_osc_changed(self, widget, send_id, send_enabled):
         self.sends_table.set_mute(send_id, send_enabled)
@@ -759,7 +715,7 @@ class ControllerGUI(Gtk.Window):
     def safe_strip_select(self, ssid):
         if self.strip_table.check_if_ssid_exists(ssid):
             if self.bVCAmode:
-                self.strip_table.strip_select(ssid, True)  # This is ok for track/bus since ssid is checked inside
+                self.strip_table.strip_select(ssid, True, as_VCA = True)  # This is ok for track/bus since ssid is checked inside
             else:
                 liblo.send(self.target, "/strip/select", ssid, 0) #TODO I must send a zero not a 1 to select! this must be a bug in Ardour (8.12)!
 
@@ -775,7 +731,7 @@ class ControllerGUI(Gtk.Window):
         return self.bSpill
 
     def __init__(self):
-        self.bOSC_is_ready = False #Block OSC sending if not ready and fully configured
+        self.number_of_strips_per_page = 24 #In Ardour pages refers to bank, for me, bank is the mapped faders
         self.bVCAmode = False #Controls if its showing track/bus or VCA's
         self.bSpill = False #Signal when in spill mode
         self.iLastSelectedTrackBus_ssid = None
@@ -980,7 +936,7 @@ class ControllerGUI(Gtk.Window):
         self.stack.set_transition_duration(250)
 
         #Add the strip select table
-        self.strip_table = stripTable.StripTable(8, 120, self.PIXELS_X_SECOND) #Limit to 120 tracks
+        self.strip_table = stripTable.StripTable(8, self.number_of_strips_per_page, self.PIXELS_X_SECOND)
         self.strip_table.connect("bank_channel_fader_changed", self.bank_channel_fader_changed)
         self.strip_table.connect("bank_channel_fader_gain_changed", self.bank_channel_fader_gain_changed)
         self.strip_table.connect("bank_channel_solo_changed", self.bank_channel_solo_changed)
@@ -1179,9 +1135,6 @@ class ControllerGUI(Gtk.Window):
 
         max_sends_controls = 20
         self.sends_table = stripTable.StripTable(4, max_sends_controls, None, True) #Limit to 20 channels of sends
-        for i in range(0, max_sends_controls):
-            self.sends_table.register_strip(i+1, "###", stripTypes.StripEnum.AudioBus,
-                                          False, False, False, 1, 1)
 
         self.sends_table.connect("bank_channel_mute_changed", self.bank_send_active_changed)
         self.sends_table.connect("bank_channel_fader_changed", self.bank_send_fader_changed)
@@ -1227,10 +1180,12 @@ class ControllerGUI(Gtk.Window):
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
         # Connect OSC message received signals
-        self.oscserver.connect("list_reply_track", self.list_osc_reply_track)
-        self.oscserver.connect("list_reply_bus", self.list_osc_reply_bus)
-        self.oscserver.connect("list_reply_end", self.list_osc_reply_end)
+        #TODO remove all the reply stuff
+        #self.oscserver.connect("list_reply_track", self.list_osc_reply_track)
+        #self.oscserver.connect("list_reply_bus", self.list_osc_reply_bus)
+        #self.oscserver.connect("list_reply_end", self.list_osc_reply_end)
         #self.oscserver.connect("strip_list_changed", self.list_osc_changed) #TODO disconnected I'm not sure if i want it...
+        self.oscserver.connect("strip_name_changed", self.strip_name_osc_changed)
         self.oscserver.connect("fader_changed", self.fader_osc_changed)
         self.oscserver.connect("fader_gain_changed", self.fader_gain_osc_changed)
         self.oscserver.connect("solo_changed", self.solo_osc_changed)
@@ -1269,7 +1224,6 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_send_enable_changed", self.select_send_enable_osc_changed)
         self.oscserver.connect("select_send_fader_changed", self.select_send_fader_osc_changed)
         self.oscserver.connect("select_send_gain_changed", self.select_send_gain_osc_changed)
-        self.oscserver.connect("strip_name_changed", self.strip_name_osc_changed)
         self.oscserver.connect("osc_heartbeat_tick", self.osc_heartbeat_tick)
 
         self.set_size_request(window_width, window_height)
@@ -1281,8 +1235,9 @@ class ControllerGUI(Gtk.Window):
             selbank.set_strip_type(StripEnum.Empty)
 
         #Start with all send strips hidden, must be done here after the show_all() of the main screen
-        for i in range(0, self.sends_table.get_number_of_strips()):
-            self.sends_table.hide_strip(i+1)
+        #TODO rethink with new method
+        #for i in range(0, self.sends_table.get_number_of_strips()):
+        #    self.sends_table.hide_strip(i+1)
 
         # Set theme
         screen = Gdk.Screen.get_default()
@@ -1295,6 +1250,7 @@ class ControllerGUI(Gtk.Window):
         #Watchdog timer to manage OSC connection
         self.watchdog = oscconnectionwatchdog.OSCConnectionWatchdog(callback=self.on_watchdog_expired)
         self.watchdog.start()
+        self.refresh_strip_list_ALL(None)
 
         # Maximize
         if window_maximize:

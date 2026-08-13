@@ -10,7 +10,6 @@ class OSCConnectionWatchdog:
 		self.callback = callback
 		self._timer_id = None
 		self.bOnline = False
-		self.bFirstRun = True #The first time it will trigger really quick
 
 	def start(self):
 		"""Starts or resets (kicks) the watchdog timer."""
@@ -21,14 +20,9 @@ class OSCConnectionWatchdog:
 		timeout = self.timeout_seconds_offline_mode
 		if self.bOnline:
 			timeout = self.timeout_seconds_connected_mode
-		if self.bFirstRun:
-			self.bFirstRun = False
-			timeout = 100
 
-		self._timer_id = GLib.timeout_add(
-			timeout,
-			self._on_timeout
-		)
+		#TODO enable after debug
+		#self._timer_id = GLib.timeout_add(timeout, self._on_timeout)
 
 	def reset(self):
 		"""Alias for start() — 'kicking' or feeding the watchdog."""

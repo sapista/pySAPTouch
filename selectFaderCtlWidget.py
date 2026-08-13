@@ -109,6 +109,10 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
             self.btn_Latch.set_sensitive(False)
 
     def set_name_label(self, name):
+        if name is None:
+            self.lbl_title.set_text("#TODO#") #TODO debug this
+            return
+
         if len(name) > MAX_TRACK_NAME_LENGTH:
             name = name[:MAX_TRACK_NAME_LENGTH] + "..."
         self.lbl_title.set_text(name)

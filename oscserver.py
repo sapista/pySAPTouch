@@ -107,7 +107,7 @@ class OSCServer(GObject.GObject):
                                    (float,)),
 
         'select_panner_must_have_width_control_changed': (GObject.SIGNAL_RUN_LAST, None,
-                                     (bool,)),
+                                     (int, bool,)),
 
         'select_trimdB_automation_changed': (GObject.SIGNAL_RUN_LAST, None,
                                      (int,)),
@@ -161,13 +161,16 @@ class OSCServer(GObject.GObject):
 
         self.osc_registered_methods = []
 
+        self.add_method("/strip/name", 'is', self.strip_name_changed_callback)
         self.add_method("/strip/fader", 'if', self.fader_callback)
         self.add_method("/strip/gain", 'if', self.fader_gain_callback)
         self.add_method("/strip/solo", 'if', self.solo_callback)
         self.add_method("/strip/mute", 'if', self.mute_callback)
         self.add_method("/strip/recenable", 'if', self.rec_callback)
         self.add_method("/strip/select", 'if', self.select_callback)
-        self.add_method("/strip/meter", 'if', self.meter_callback)
+
+        # TODO lets enable one by one
+        #self.add_method("/strip/meter", 'if', self.meter_callback)
         self.add_method("/strip/list", None, self.strip_list_callback)
         self.add_method("/reply", 'ssiiiiii', self.reply_callback_Track)
         self.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
@@ -198,8 +201,7 @@ class OSCServer(GObject.GObject):
         self.add_method("/select/send_gain", 'if', self.select_send_gain_callback)
         self.add_method("/select/send_enable", 'if', self.select_send_enable_callback)
         self.add_method("/strip/sends", None, self.sends_query_callback)
-        self.add_method("/strip/pan_type", 's', self.select_pan_type_callback)
-        self.add_method("/strip/name", 'is', self.strip_name_changed_callback)
+        self.add_method("/strip/pan_type", 'is', self.select_pan_type_callback)
         self.add_method("/heartbeat", 'f', self.heartbeat_callback)
         self.OSCReceiver.add_method(None, None, self.fallback)
 
@@ -377,10 +379,11 @@ class OSCServer(GObject.GObject):
         GObject.idle_add(self.emit, 'send_reply_end')
 
     def select_pan_type_callback (self, path, args):
+        strip_ssid = int(args[0])  # Get strip ssid
         bPannerHasWidthControl = False
-        if args[0] == 'panner_2in2out':
+        if args[1] == 'panner_2in2out':
             bPannerHasWidthControl = True
-        GObject.idle_add(self.emit, 'select_panner_must_have_width_control_changed', bPannerHasWidthControl)
+        GObject.idle_add(self.emit, 'select_panner_must_have_width_control_changed', strip_ssid, bPannerHasWidthControl)
 
     def strip_name_changed_callback (self, path, args):
         i, name = args

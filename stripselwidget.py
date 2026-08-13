@@ -38,6 +38,12 @@ class StripSelWidget(Gtk.EventBox):
         self.fader_gain_value = None  # Used only in send mode
         self.lbl_type = fastlabel.FastLabel( font_size = 12)
         self.lbl_type.hide()
+        self.stripname = None
+
+        #TODO not getting the right height!
+        #self.set_vexpand(True)
+        #self.set_valign(Gtk.Align.FILL)
+        #self.set_size_request(-1, 120)
 
         #Waveform viewer
         self.meter = miniMeter.MiniMeter()
@@ -107,54 +113,27 @@ class StripSelWidget(Gtk.EventBox):
     def get_bank_index(self):
         return self.ibank_index
 
-    def set_ssid(self, issid):
-        self.ssid = issid
-        if self.ssid is None:
-            self.MFrame.set_ghost(True)
-            self.lbl_name.hide()
-            self.lbl_type.hide()
-            if not self.isSend:
-                if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-                    self.LED_rec.hide()
-                self.LED_solo.hide()
-            self.LED_mute.hide()
-            self.meter.hide()
-
-        else:
-            self.MFrame.set_ghost(False)
-            self.lbl_name.show()
-            self.lbl_type.show()
-            if not self.isSend:
-                if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-                    self.LED_rec.show()
-                self.LED_solo.show()
-            self.LED_mute.show()
-            self.meter.clear_buffer()
-            self.meter.show()
-
     def set_type(self, istriptype):
         self.type = istriptype
-
-        #LED hide state
-        if not self.isSend:
-            if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
-                self.LED_rec.show()
-            else:
-                self.LED_rec.hide()
 
         # Set frame type
         self.MFrame.set_strip_type(istriptype)
 
         # Set strip type label
         dirstriptype = {StripEnum.Empty: '',
-                        StripEnum.AudioTrack: 'Audio Track',
-                        StripEnum.AudioBus: 'Audio Bus',
-                        StripEnum.MidiTrack: 'Midi Track',
-                        StripEnum.MidiBus: 'Midi Bus',
+                        StripEnum.Track: 'Track',
+                        StripEnum.Bus: 'Bus',
+                        StripEnum.MidiTrack: 'Track',
+                        StripEnum.MidiBus: 'Bus',
                         StripEnum.AuxBus: 'Aux Bus',
                         StripEnum.VCA: 'VCA'}
 
         self.lbl_type.set_text(str(self.ssid) + "-" + dirstriptype[istriptype])
+        self.lbl_type.show()
+
+        if self.type is StripEnum.Track or self.type is StripEnum.MidiTrack:
+            if self.lbl_name.get_visible():
+                self.LED_rec.show()
 
 
     def set_name(self, strip_name):
@@ -164,6 +143,13 @@ class StripSelWidget(Gtk.EventBox):
             self.stripname = strip_name
 
         self.lbl_name.set_text(self.stripname)
+        self.lbl_name.show()
+
+        self.MFrame.set_ghost(False)
+        self.MFrame.show()
+
+        self.LED_mute.show() #This is needed by sends
+        self.set_sensitive(True)
 
     def set_selected(self, select):
         self.selected = select
@@ -182,14 +168,20 @@ class StripSelWidget(Gtk.EventBox):
     def set_solo(self, bvalue):
         if not self.isSend:
             self.LED_solo.set_value(bvalue)
+            if self.lbl_name.get_visible():
+                self.LED_solo.show()
 
     def set_mute(self, bvalue):
         self.LED_mute.set_value(bvalue)
+        if self.lbl_name.get_visible():
+            self.LED_mute.show()
 
     def set_rec(self, bvalue):
         if not self.isSend:
-            if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+            if (self.type is StripEnum.Track) or (self.type is StripEnum.MidiTrack):
                 self.LED_rec.set_value(bvalue)
+                if self.lbl_name.get_visible():
+                    self.LED_rec.show()
 
     def set_inputs_outputs(self, ins, outs ):
         self.inputs = ins
@@ -202,7 +194,7 @@ class StripSelWidget(Gtk.EventBox):
         return self.LED_mute.get_value()
 
     def get_rec(self):
-        if (self.type is StripEnum.AudioTrack) or (self.type is StripEnum.MidiTrack):
+        if (self.type is StripEnum.Track) or (self.type is StripEnum.MidiTrack):
             return self.LED_rec.get_value()
 
     def set_meter(self, value):
@@ -223,10 +215,24 @@ class StripSelWidget(Gtk.EventBox):
     def get_fader_gain(self):
         return  self.fader_gain_value
 
+    def hide_strip(self):
+        self.meter.hide()
+        self.MFrame.set_ghost(True)
+        self.lbl_name.hide()
+        self.lbl_type.hide()
+        self.LED_mute.hide()
+        if not self.isSend:
+            self.LED_rec.hide()
+            self.LED_solo.hide()
+        self.meter.clear_buffer()
+        self.set_sensitive(False)
+
+    #TODO remove this method, currentlu used by sends only
     def hide_child(self):
         self.MFrame.hide()
         self.meter.hide()
 
+    # TODO remove this method, currentlu used by sends only
     def show_child(self):
         self.MFrame.show()
         self.meter.show()
