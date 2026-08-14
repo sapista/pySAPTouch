@@ -91,6 +91,13 @@ class ControllerGUI(Gtk.Window):
     def btn_solo_cancel_clicked(self, widget):
         liblo.send(self.target, "/cancel_all_solos", 1.0)
 
+    def btn_solo_toggle_exclusive_clicked(self, widget):
+        #This action command not work so just emulate it from OSC keeping ardour config set to non-exclusive
+        #liblo.send(self.target, "/access_action/Solo/toggle-exclusive-solo", 1)
+        self.bSoloExclusive = self.btn_solo_toggle_exclusive.get_active()
+        if self.bSoloExclusive:
+            self.btn_solo_cancel_clicked(None)
+
     def btn_playStop_clicked(self, widget):
         liblo.send(self.target, "/toggle_roll")
 
@@ -209,11 +216,8 @@ class ControllerGUI(Gtk.Window):
         if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
-                #TODO testing new method
                 self.osc_send2ssid("/strip/fader/touch", selSSID, 1)
                 self.osc_send2ssid("/strip/fader", selSSID, value)
-                #liblo.send(self.target, "/strip/fader/touch", selSSID, 1)  # Using floats it works
-                #liblo.send(self.target, "/strip/fader", selSSID, value)
         return True
 
     def fader_bank_mode_untouched(self, event, value):
@@ -223,37 +227,25 @@ class ControllerGUI(Gtk.Window):
                 if value & (1 << i):
                     selSSID = self.strips_list_selbank[i].get_ssid()
                     if selSSID is not None:
-                        # TODO testing new method
                         self.osc_send2ssid("/strip/fader/touch", selSSID, 0)
-                        #liblo.send(self.target, "/strip/fader/touch", selSSID, 0)
         return True
 
     def trim_single_mode_changed(self, event, value):
-        # TODO testing new method
         self.osc_send2select("/select/trimdB/touch", 1)
         self.osc_send2select("/select/trimdB", value)
-        #liblo.send(self.target, "/select/trimdB/touch", 1)
-        #liblo.send(self.target, "/select/trimdB", value)
         return True
 
     def trim_single_mode_untouched(self, event):
-        # TODO testing new method
         self.osc_send2select("/select/trimdB/touch", 1)
-        #liblo.send(self.target, "/select/trimdB/touch", 0)
         return True
 
     def fader_single_mode_changed(self, event, value):
-        # TODO testing new method
         self.osc_send2select("/select/fader/touch", 1)
         self.osc_send2select("/select/fader", value)
-        #liblo.send(self.target, "/select/fader/touch", 1)
-        #liblo.send(self.target, "/select/fader", value)
         return True
 
     def fader_single_mode_untouched(self, event):
-        # TODO testing new method
         self.osc_send2select("/select/fader/touch", 0)
-        #liblo.send(self.target, "/select/fader/touch", 0)
         return True
 
     def pan_pos_single_mode_changed(self, event, value):
@@ -331,6 +323,11 @@ class ControllerGUI(Gtk.Window):
         #liblo.send(self.target, "/set_surface", 0, 7, 24651, 2, 0) #Meters disabled
         # the feedback value of 24771 includes the level meters as text and the changes the #reply messages to /reply
 
+    def btn_page_up_clicked(self, widget):
+        liblo.send(self.target, "/bank_up")
+
+    def btn_page_down_clicked(self, widget):
+        liblo.send(self.target, "/bank_down")
 
     def btn_VCA_mode_clicked(self, widget):
         if self.bVCAmode is not True:
@@ -404,13 +401,18 @@ class ControllerGUI(Gtk.Window):
         self.strip_table.clear_strips()
         liblo.send(self.target, "/strip/spill", ichannel)
 
-        #Ensuer every spill selects the first ssid in its spill group
-        self.safe_strip_select(1)  #TODO test this with real ethernet com, maybe the lag screws it!
+        #Ensure every spill selects the first ssid in its spill group
+        self.safe_strip_select(1)
+
+        GLib.timeout_add(400, self.spill_mode_blink_timer)
 
     def bank_mute_clicked(self, widget, ichannel, bvalue):
         liblo.send(self.target, "/strip/mute", ichannel, int(bvalue))
 
     def bank_solo_clicked(self, widget, ichannel, bvalue):
+        if self.bSoloExclusive:
+            self.btn_solo_cancel_clicked(None)
+
         liblo.send(self.target, "/strip/solo", ichannel, int(bvalue))
 
     # Callbacks from OSC incoming messages
@@ -462,6 +464,22 @@ class ControllerGUI(Gtk.Window):
         GLib.source_remove(self.smpte_timer_ID)  # Destroy previous timmer if running
         self.smpte_timer_ID = GLib.timeout_add(200, self.smpte_timeout)  # Reset timmer
 
+    def osc_page_up(self, widget, ipage):
+        #print("Page Up: '%i'" % (ipage))
+        self.iPages_up_remaning = ipage
+        self.calc_current_page_update_label()
+
+    def osc_page_down(self, widget, ipage):
+        #print("Page Down: '%i'" % (ipage))
+        self.iPages_down_remaning = ipage
+        self.calc_current_page_update_label()
+
+    def calc_current_page_update_label(self):
+        total_pages = self.iPages_up_remaning + self.iPages_down_remaning + 1
+        current_page = self.iPages_down_remaning + 1
+        str_page_label = "PAGE " + str(current_page) + "/" + str(total_pages)
+        self.lbl_current_page.set_markup("<span font_weight='bold' size='15000'>"+str_page_label+"</span>")
+
     def unknown_osc_message(self, widget, svalue):
         print(svalue)
 
@@ -469,50 +487,6 @@ class ControllerGUI(Gtk.Window):
         self.btn_playpause.set_image(self.btn_playpause_WhiteIcon)
         self.btn_loop.set_image(self.btn_loop_WhiteIcon)
         return True
-
-    #TODO remove this!
-    def list_osc_reply_end(self, widget):
-        #Connected, set watchdog
-        #self.watchdog.set_OSC_online(True) #TODO can be safely removed, now is in the heartbit
-        self.LED_OSCconnection.set_value(True)
-        self.LED_OSCconnection.set_label("OSC Online")
-        #self.bOSC_is_ready = True #TODO remove
-
-        if self.bVCAmode:
-            #VCA MODE
-            self.strip_table.reset_current_selected_bank()
-            if self.strip_table.get_number_of_strips() > 0:
-                self.safe_strip_select(self.strip_table.get_strip_ssid(0))
-
-        else:
-            #TRACK/BUS MODE
-            if self.strip_table.get_number_of_strips() > 0:
-                if self.iLastSelectedTrackBus_ssid is None:
-                    self.safe_strip_select(self.strip_table.get_strip_ssid(0))
-                else:
-                    self.safe_strip_select(self.iLastSelectedTrackBus_ssid)
-
-        if self.bSpill:
-            if self.strip_table.get_number_of_strips() > 1:
-                self.safe_strip_select(self.strip_table.get_strip_ssid(0)) #In VCA spill mode select always the first stripe
-                GLib.timeout_add(400, self.spill_mode_blink_timer)
-            else:
-                #Show a message to inform there is no Strip assigned to this VCA
-                dialog = Gtk.MessageDialog(
-                    transient_for=self.get_toplevel(),
-                    modal=True,
-                    destroy_with_parent=True,
-                    message_type=Gtk.MessageType.WARNING,
-                    buttons=Gtk.ButtonsType.CLOSE,
-                    text="There is no strip assigned to the spilled VCA"
-                )
-                dialog.set_title("VCA Error")
-                dialog.run()
-                dialog.destroy()
-
-                #Return to VCA mode
-                self.bVCAmode = False
-                self.btn_VCA_mode_clicked(None)
 
     #Edit Mode button signals
     def eBtn_close_clicked(self, widget):
@@ -547,6 +521,9 @@ class ControllerGUI(Gtk.Window):
         liblo.send(self.target, "/select/mute", int(not self.eBtn_mute.get_active_state()))
 
     def edit_soloBtn_clicked(self, widget):
+        if self.bSoloExclusive:
+            self.btn_solo_cancel_clicked(None)
+
         liblo.send(self.target, "/select/solo", int(not self.eBtn_solo.get_active_state()))
 
     def edit_soloIsoBtn_clicked(self, widget):
@@ -778,11 +755,15 @@ class ControllerGUI(Gtk.Window):
         # Build the header bar
         self.headerBar = Gtk.HeaderBar()
         self.headerBar.set_show_close_button(False)
-        self.set_titlebar(self.headerBar)
-        self.ImgLogo = Gtk.Image.new_from_file("icons/sapaudio_logo.png")
         self.headerBar.set_title("SAPTouch")
         self.headerBar.set_custom_title(Gtk.Box()) #Remove title from the GUI (the logo will do)
-        self.headerBar.pack_start(self.ImgLogo)
+        self.header_content_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        self.headerBar.pack_end(self.header_content_box)
+        self.set_titlebar(self.headerBar)
+
+        #SapAudio Logo
+        self.ImgLogo = Gtk.Image.new_from_file("icons/sapaudio_logo.png")
+        self.header_content_box.pack_start(self.ImgLogo,expand=False, fill=False, padding=10)
 
         self.hbox_top = Gtk.HBox()
         self.vbox_top.pack_start(self.hbox_top, expand=False, fill=False, padding=0)
@@ -827,7 +808,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_close = Gtk.Button()
         self.btn_close.set_image(Gtk.Image.new_from_file("icons/close_small.png"))
         self.btn_close.connect("clicked", self.btn_close_clicked)
-        self.headerBar.pack_end(self.btn_close)
+        self.header_content_box.pack_end(self.btn_close, expand=False, fill=False, padding=0)
 
         #Loop button
         self.btn_loop = Gtk.Button()
@@ -835,7 +816,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_loop_GreenIcon = Gtk.Image.new_from_file("icons/loopGreen.png")
         self.btn_loop.set_image(self.btn_loop_WhiteIcon)
         self.btn_loop.connect("clicked", self.btn_loop_clicked)
-        self.headerBar.pack_end(self.btn_loop)
+        self.header_content_box.pack_end(self.btn_loop, expand=False, fill=False, padding=2)
 
         #Play button
         self.btn_playpause = Gtk.Button()
@@ -843,20 +824,22 @@ class ControllerGUI(Gtk.Window):
         self.btn_playpause_GreenIcon = Gtk.Image.new_from_file("icons/play_pauseGreen.png")
         self.btn_playpause.set_image(self.btn_playpause_WhiteIcon)
         self.btn_playpause.connect("clicked", self.btn_playStop_clicked) # 5fa358ff  play state color
-        self.headerBar.pack_end(self.btn_playpause)
-
-        #Metronome button
-        self.btn_metronome = Gtk.Button()
-        self.btn_metronome.set_image(Gtk.Image.new_from_file("icons/metronome.png"))
-        self.btn_metronome.connect("clicked", self.btn_metronome_clicked)
-        self.headerBar.pack_end(self.btn_metronome)
+        self.header_content_box.pack_end(self.btn_playpause,  expand=False, fill=False, padding=2)
 
         #SOLO cancel button
         self.btn_solo_cancel = Gtk.Button.new_with_label("")
         self.btn_solo_cancel.get_child().set_markup("<span weight='bold' size='large' color='#52824e'>Cancel\nSOLO</span>")
         self.btn_solo_cancel.get_child().set_justify(Gtk.Justification.CENTER)
         self.btn_solo_cancel.connect("clicked", self.btn_solo_cancel_clicked)
-        self.headerBar.pack_end(self.btn_solo_cancel)
+        self.header_content_box.pack_end(self.btn_solo_cancel,  expand=False, fill=False, padding=0)
+
+        #Solo exclusive Toggle
+        self.btn_solo_toggle_exclusive = Gtk.ToggleButton.new_with_label("")
+        self.btn_solo_toggle_exclusive.get_child().set_markup("<span weight='bold' size='large' color='#52824e'>Exclusive\nSOLO</span>")
+        self.btn_solo_toggle_exclusive.get_child().set_justify(Gtk.Justification.CENTER)
+        self.btn_solo_toggle_exclusive.connect("clicked", self.btn_solo_toggle_exclusive_clicked)
+        self.header_content_box.pack_end(self.btn_solo_toggle_exclusive, expand=False, fill=False, padding=0)
+        self.bSoloExclusive = False
 
         # Jog-Wheel mode selector
         self.wheel_frame = Gtk.Frame(label="  Wheel Mode  ")
@@ -892,7 +875,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_marker_mode.connect("clicked", self.on_jog_mode_changed)
 
         self.jog_mode = "" #Init with no mode selected
-        self.headerBar.pack_end(self.wheel_frame)
+        self.header_content_box.pack_end(self.wheel_frame, expand=False, fill=False, padding=0)
 
         # Jog-Wheel off timer
         self.JogWheel_timer_id = None
@@ -902,6 +885,7 @@ class ControllerGUI(Gtk.Window):
         self.btn_session_save.set_image(Gtk.Image.new_from_file("icons/save_icon.png"))
         self.btn_session_save.connect("clicked", self.btn_session_save_clicked)
         self.hbox_top.pack_start(self.btn_session_save, expand=False, fill=False, padding=0)
+
 
         # Refresh button All
         self.btn_refresh_ALL = Gtk.Button()
@@ -914,6 +898,32 @@ class ControllerGUI(Gtk.Window):
         self.LED_OSCconnection.set_size_request(100, 10)
         self.hbox_top.pack_end(self.LED_OSCconnection, expand=False, fill=False, padding=0)
 
+        #Button page (bank in Ardour) up/down
+        self.btn_page_up = Gtk.Button()
+        self.btn_page_down = Gtk.Button()
+        label_btn_up = Gtk.Label()
+        label_btn_down = Gtk.Label()
+        label_btn_up.set_markup(  "<span font_weight='bold' size='15000'>  PAGE UP  </span>")
+        label_btn_down.set_markup("<span font_weight='bold' size='15000'>PAGE DOWN</span>")
+        self.btn_page_up.add(label_btn_up)
+        self.btn_page_down.add(label_btn_down)
+        self.btn_page_up.connect("clicked", self.btn_page_up_clicked)
+        self.btn_page_down.connect("clicked", self.btn_page_down_clicked)
+        self.hbox_top.pack_end(self.btn_page_up, expand=False, fill=False, padding=4)
+        self.hbox_top.pack_end(self.btn_page_down, expand=False, fill=False, padding=4)
+        self.iPages_up_remaning = 0
+        self.iPages_down_remaning = 0
+        self.lbl_current_page = Gtk.Label()
+        self.calc_current_page_update_label()
+        self.hbox_top.pack_end(self.lbl_current_page, expand=False, fill=False, padding=4)
+
+        #Metronome button
+        self.btn_metronome = Gtk.Button()
+        self.btn_metronome.set_image(Gtk.Image.new_from_file("icons/metronome.png"))
+        self.btn_metronome.connect("clicked", self.btn_metronome_clicked)
+        #self.headerBar.pack_end(self.btn_metronome)
+        self.hbox_top.pack_end(self.btn_metronome, expand=False, fill=False, padding=4)
+
         self.LED_OSCconnection.set_value(False)
 
         # Mode buttons VCA and TRack/Bus
@@ -921,12 +931,12 @@ class ControllerGUI(Gtk.Window):
         self.btn_activate_VCA_mode.set_size_request(100, 100);
         self.btn_activate_VCA_mode.set_active_state(False)
         self.btn_activate_VCA_mode.connect("clicked", self.btn_VCA_mode_clicked)
-        self.headerBar.pack_end(self.btn_activate_VCA_mode)
+        self.header_content_box.pack_end(self.btn_activate_VCA_mode, expand=False, fill=False, padding=0)
         self.btn_activate_TrkBus_mode =  simplebuttonwidget.SimpleButton("STRIPS", "#42d387")
         self.btn_activate_TrkBus_mode.set_size_request(100, 100);
         self.btn_activate_TrkBus_mode.set_active_state(True)
         self.btn_activate_TrkBus_mode.connect("clicked", self.btn_TrkBus_mode_clicked)
-        self.headerBar.pack_end(self.btn_activate_TrkBus_mode)
+        self.header_content_box.pack_end(self.btn_activate_TrkBus_mode, expand=False, fill=False, padding=0)
 
         # Global bool to store loop state
         self.bLooping = False
@@ -1180,11 +1190,12 @@ class ControllerGUI(Gtk.Window):
             self.table_bank_edit.attach(self.eSendsCtl[i], 4 + i, 0, 1, 1)
 
         # Connect OSC message received signals
-        #TODO remove all the reply stuff
+        # Not using reply messages anymore sice them caused Ardour Crashes
         #self.oscserver.connect("list_reply_track", self.list_osc_reply_track)
         #self.oscserver.connect("list_reply_bus", self.list_osc_reply_bus)
         #self.oscserver.connect("list_reply_end", self.list_osc_reply_end)
-        #self.oscserver.connect("strip_list_changed", self.list_osc_changed) #TODO disconnected I'm not sure if i want it...
+        #self.oscserver.connect("strip_list_changed", self.list_osc_changed)
+
         self.oscserver.connect("strip_name_changed", self.strip_name_osc_changed)
         self.oscserver.connect("fader_changed", self.fader_osc_changed)
         self.oscserver.connect("fader_gain_changed", self.fader_gain_osc_changed)
@@ -1194,6 +1205,8 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_changed", self.select_osc_changed)
         self.oscserver.connect("meter_changed", self.meter_osc_changed)
         self.oscserver.connect("smpte_changed", self.smpte_osc_changed)
+        self.oscserver.connect("page_up", self.osc_page_up)
+        self.oscserver.connect("page_down", self.osc_page_down)
         if log_invalid_messages:
             self.oscserver.connect("unknown_message", self.unknown_osc_message)
         self.smpte_timer_ID = GLib.timeout_add(100, self.smpte_timeout)  # Create a timer
@@ -1226,18 +1239,12 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_send_gain_changed", self.select_send_gain_osc_changed)
         self.oscserver.connect("osc_heartbeat_tick", self.osc_heartbeat_tick)
 
-        self.set_size_request(window_width, window_height)
         self.show_all()
         self.show()
 
         #Hide widgets in the fader control bank (bottom)
         for selbank in self.strips_list_selbank:
             selbank.set_strip_type(StripEnum.Empty)
-
-        #Start with all send strips hidden, must be done here after the show_all() of the main screen
-        #TODO rethink with new method
-        #for i in range(0, self.sends_table.get_number_of_strips()):
-        #    self.sends_table.hide_strip(i+1)
 
         # Set theme
         screen = Gdk.Screen.get_default()
@@ -1255,6 +1262,8 @@ class ControllerGUI(Gtk.Window):
         # Maximize
         if window_maximize:
             self.maximize()
+        else:
+            self.set_size_request(window_width, window_height)
 
     def main(self):
         self.oscserver.start()

@@ -3,7 +3,6 @@ A widget conntaining multiple stripselwidgets in a Gtk.Grid
 """
 
 from gi.repository import Gtk, GObject, GLib
-from pandas.core.computation import check
 
 import stripTypes
 from stripselwidget import StripSelWidget
@@ -48,21 +47,9 @@ class StripTable(Gtk.Grid):
         self.current_selected_bank_idx = None
         self.send_mode = is_send
         self.vca_mode = False
-
-        #self.viewport_table = Gtk.Viewport()
-        #self.table = Gtk.Grid()
-        self.set_row_spacing(5)
+        self.set_row_spacing(1)
+        self.set_column_spacing(1)
         self.set_column_homogeneous(True)
-        #self.viewport_table.add(self.table)
-        #self.add(self.viewport_table) #TODO remove viewports, no scroll anymore!
-        #self.add(self.table)
-
-        #self.table = Gtk.Label(label="Strip list is empty, click the refresh button to start DAW comunication")  #TODO remove?
-        #self.viewport_table = Gtk.Viewport()
-        #self.viewport_table.add(self.table) #TODO remove?
-        #self.add(self.viewport_table)
-
-        #self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC) #TODO remove
 
         #Add strip widgets
         for i in range(0, max_strips):
@@ -259,7 +246,6 @@ class StripTable(Gtk.Grid):
     def set_meter(self, ssid, value):
         if  self.check_if_ssid_exists(ssid):
             self.strips_list_widgets[ssid - 1].set_meter(value)
-            #TODO!
 
     def strip_select(self, ssid, value, as_VCA = False):
         if  self.check_if_ssid_exists(ssid):

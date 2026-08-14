@@ -58,6 +58,12 @@ class OSCServer(GObject.GObject):
         'smpte_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (str,)),
 
+        'page_up': (GObject.SIGNAL_RUN_LAST, None,
+                          (int,)),
+
+        'page_down': (GObject.SIGNAL_RUN_LAST, None,
+                    (int,)),
+
         'select_name_changed': (GObject.SIGNAL_RUN_LAST, None,
                           (str,)),
 
@@ -168,9 +174,9 @@ class OSCServer(GObject.GObject):
         self.add_method("/strip/mute", 'if', self.mute_callback)
         self.add_method("/strip/recenable", 'if', self.rec_callback)
         self.add_method("/strip/select", 'if', self.select_callback)
-
-        # TODO lets enable one by one
-        #self.add_method("/strip/meter", 'if', self.meter_callback)
+        self.add_method("/strip/meter", 'if', self.meter_callback)
+        self.add_method("/bank_up", 'i', self.bank_up_callback)
+        self.add_method("/bank_down", 'i', self.bank_down_callback)
         self.add_method("/strip/list", None, self.strip_list_callback)
         self.add_method("/reply", 'ssiiiiii', self.reply_callback_Track)
         self.add_method("/reply", 'ssiiiii', self.reply_callback_Bus)
@@ -248,7 +254,17 @@ class OSCServer(GObject.GObject):
 
     def meter_callback(self, path, args):
         i, f = args
-        GObject.idle_add(self.emit, 'meter_changed', i, f)
+        if f >= 0: #Ignore negative values since Ardour sometimes sends them by mistake
+            GObject.idle_add(self.emit, 'meter_changed', i, f)
+
+    def bank_up_callback(self, path, args):
+        i = args[0]
+        GObject.idle_add(self.emit, 'page_up', i)
+
+
+    def bank_down_callback(self, path, args):
+        i = args[0]
+        GObject.idle_add(self.emit, 'page_down', i)
 
     def reply_callback_Track(self, path, args):
         sstriptype, sstripname, inumins, inumouts, imute, isolo, issid, irec = args

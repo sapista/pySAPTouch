@@ -16,7 +16,7 @@ class FastLabel(Gtk.DrawingArea):
 		self.text_color = (0.9, 0.9, 0.9, 1.0)
 
 		self.connect("draw", self._on_draw)
-		self.set_size_request(50, 20) #TODO review
+		self.set_size_request(50, 20)
 
 		#Redraw timer
 		self.bTimmerActive = False

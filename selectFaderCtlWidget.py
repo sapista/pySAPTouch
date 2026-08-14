@@ -16,7 +16,7 @@ MAX_TRACK_NAME_LENGTH = 15
 class SelectFaderCtlWidget(customframewidget.CustomFrame):
     __gsignals__ = {
         'automation_changed': (GObject.SIGNAL_RUN_LAST, None,
-                               (int,)), #TODO I will need the sendID for the send bank!
+                               (int,)),
 
         'send_active_changed': (GObject.SIGNAL_RUN_LAST, None,
                                 (int, bool,)), #sendID, value
@@ -110,7 +110,7 @@ class SelectFaderCtlWidget(customframewidget.CustomFrame):
 
     def set_name_label(self, name):
         if name is None:
-            self.lbl_title.set_text("#TODO#") #TODO debug this
+            self.lbl_title.set_text("")
             return
 
         if len(name) > MAX_TRACK_NAME_LENGTH:

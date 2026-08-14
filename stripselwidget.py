@@ -40,11 +40,6 @@ class StripSelWidget(Gtk.EventBox):
         self.lbl_type.hide()
         self.stripname = None
 
-        #TODO not getting the right height!
-        #self.set_vexpand(True)
-        #self.set_valign(Gtk.Align.FILL)
-        #self.set_size_request(-1, 120)
-
         #Waveform viewer
         self.meter = miniMeter.MiniMeter()
 
@@ -130,11 +125,10 @@ class StripSelWidget(Gtk.EventBox):
 
         self.lbl_type.set_text(str(self.ssid) + "-" + dirstriptype[istriptype])
         self.lbl_type.show()
+        self.meter.show()
 
         if self.type is StripEnum.Track or self.type is StripEnum.MidiTrack:
-            if self.lbl_name.get_visible():
-                self.LED_rec.show()
-
+            self.LED_rec.show()
 
     def set_name(self, strip_name):
         if len(strip_name) > MAX_TRACK_NAME_LENGTH:
@@ -226,13 +220,3 @@ class StripSelWidget(Gtk.EventBox):
             self.LED_solo.hide()
         self.meter.clear_buffer()
         self.set_sensitive(False)
-
-    #TODO remove this method, currentlu used by sends only
-    def hide_child(self):
-        self.MFrame.hide()
-        self.meter.hide()
-
-    # TODO remove this method, currentlu used by sends only
-    def show_child(self):
-        self.MFrame.show()
-        self.meter.show()
