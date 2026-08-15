@@ -216,7 +216,8 @@ class ControllerGUI(Gtk.Window):
         if self.strip_table.get_number_of_strips() > 0:  # Only if we have strip list from DAW
             selSSID = self.strips_list_selbank[channel].get_ssid()
             if selSSID is not None:
-                self.osc_send2ssid("/strip/fader/touch", selSSID, 1)
+                if not self.bVCAmode: #TODO Ardour Bug, sending touch in VCA mode may crash Ardour! This is a temporal workaround
+                    self.osc_send2ssid("/strip/fader/touch", selSSID, 1)
                 self.osc_send2ssid("/strip/fader", selSSID, value)
         return True
 
@@ -227,7 +228,8 @@ class ControllerGUI(Gtk.Window):
                 if value & (1 << i):
                     selSSID = self.strips_list_selbank[i].get_ssid()
                     if selSSID is not None:
-                        self.osc_send2ssid("/strip/fader/touch", selSSID, 0)
+                        if not self.bVCAmode: #TODO Ardour Bug, sending touch in VCA mode may crash Ardour! This is a temporal workaround
+                            self.osc_send2ssid("/strip/fader/touch", selSSID, 0)
         return True
 
     def trim_single_mode_changed(self, event, value):
@@ -315,6 +317,11 @@ class ControllerGUI(Gtk.Window):
     def refresh_strip_list_ALL(self, widget):
         # Config the surface as infinite banks, track setting, strip feedback and fader as position values
         #liblo.send(self.target, "/set_surface", 0, 23, 24779, 2, 0)
+        self.strip_table.set_vca_mode(False)
+        self.bSpill = False
+        self.bVCAmode = False
+        self.btn_activate_VCA_mode.set_active_state(False)
+        self.btn_activate_TrkBus_mode.set_active_state(True)
         self.strip_table.clear_strips()
 
         # Check Ardour OSC preferences for reference of these values
@@ -466,19 +473,12 @@ class ControllerGUI(Gtk.Window):
 
     def osc_page_up(self, widget, ipage):
         #print("Page Up: '%i'" % (ipage))
-        self.iPages_up_remaning = ipage
-        self.calc_current_page_update_label()
+        self.btn_page_up.set_sensitive(ipage > 0)
+
 
     def osc_page_down(self, widget, ipage):
         #print("Page Down: '%i'" % (ipage))
-        self.iPages_down_remaning = ipage
-        self.calc_current_page_update_label()
-
-    def calc_current_page_update_label(self):
-        total_pages = self.iPages_up_remaning + self.iPages_down_remaning + 1
-        current_page = self.iPages_down_remaning + 1
-        str_page_label = "PAGE " + str(current_page) + "/" + str(total_pages)
-        self.lbl_current_page.set_markup("<span font_weight='bold' size='15000'>"+str_page_label+"</span>")
+        self.btn_page_down.set_sensitive(ipage > 0)
 
     def unknown_osc_message(self, widget, svalue):
         print(svalue)
@@ -763,7 +763,7 @@ class ControllerGUI(Gtk.Window):
 
         #SapAudio Logo
         self.ImgLogo = Gtk.Image.new_from_file("icons/sapaudio_logo.png")
-        self.header_content_box.pack_start(self.ImgLogo,expand=False, fill=False, padding=10)
+        self.headerBar.pack_start(self.ImgLogo)
 
         self.hbox_top = Gtk.HBox()
         self.vbox_top.pack_start(self.hbox_top, expand=False, fill=False, padding=0)
@@ -911,11 +911,6 @@ class ControllerGUI(Gtk.Window):
         self.btn_page_down.connect("clicked", self.btn_page_down_clicked)
         self.hbox_top.pack_end(self.btn_page_up, expand=False, fill=False, padding=4)
         self.hbox_top.pack_end(self.btn_page_down, expand=False, fill=False, padding=4)
-        self.iPages_up_remaning = 0
-        self.iPages_down_remaning = 0
-        self.lbl_current_page = Gtk.Label()
-        self.calc_current_page_update_label()
-        self.hbox_top.pack_end(self.lbl_current_page, expand=False, fill=False, padding=4)
 
         #Metronome button
         self.btn_metronome = Gtk.Button()

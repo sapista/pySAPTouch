@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="disable watchdog only en debug mode">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="RC candidate new com model">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fastlabel.py" beforeDir="false" afterPath="$PROJECT_DIR$/fastlabel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO" beforeDir="false" afterPath="$PROJECT_DIR$/TODO" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/miniMeter.py" beforeDir="false" afterPath="$PROJECT_DIR$/miniMeter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/oscserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/oscserver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectFaderCtlWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectFaderCtlWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripselwidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripselwidget.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -264,14 +259,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1597075612246</updated>
-    </task>
-    <task id="LOCAL-00019" summary="completing TODO's">
-      <option name="closed" value="true" />
-      <created>1783757017076</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1783757017076</updated>
     </task>
     <task id="LOCAL-00020" summary="completed work in panners">
       <option name="closed" value="true" />
@@ -553,7 +540,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786620430012</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="RC candidate new com model">
+      <option name="closed" value="true" />
+      <created>1786706793949</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1786706793949</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -569,7 +564,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Encoder fully working" />
     <MESSAGE value="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate" />
     <MESSAGE value="config in git now is an example" />
     <MESSAGE value="changed import liblo to import pyliblo3 as liblo" />
@@ -594,7 +588,8 @@
     <MESSAGE value="better meter" />
     <MESSAGE value="redesign com model, prof of concept" />
     <MESSAGE value="disable watchdog only en debug mode" />
-    <option name="LAST_COMMIT_MESSAGE" value="disable watchdog only en debug mode" />
+    <MESSAGE value="RC candidate new com model" />
+    <option name="LAST_COMMIT_MESSAGE" value="RC candidate new com model" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

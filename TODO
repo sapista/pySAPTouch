@@ -2,7 +2,7 @@
 > Sends. Implement
 
 > VCA's
- TODO there is an Ardour (9.7.0) crash when moving a VCA fader that has no any channel assigned
+ TODO there is an Ardour (9.7.0) crash when touching a VCA fader that has no any channel assigned
     --> Report this to bug tracker
 
 ################################################################################################################
@@ -92,3 +92,20 @@ send_osc osc.udp://127.0.0.1:3819 /strip/select 2 1
 
 #Set a pan command:
 send_osc osc.udp://127.0.0.1:3819 /select/pan_stereo_position 0.4
+
+
+################ ARDOUR 9.7 CRASH --> Reported
+send_osc osc.udp://127.0.0.1:3819 /set_surface 24  7 24643 2 0
+send_osc osc.udp://127.0.0.1:3819 /set_surface/strip_types 16  (VCA Only)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 2 1
+send_osc osc.udp://127.0.0.1:3819 /strip/fader 2 0.2  (Moving VCA2 works fine)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 2 0
+send_osc osc.udp://127.0.0.1:3819 /strip/spill 1  (SPILL VCA 1)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 3 1
+send_osc osc.udp://127.0.0.1:3819 /strip/fader 3 0.2  (Moving VCA 1 Master works fine)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 3 0
+send_osc osc.udp://127.0.0.1:3819 /set_surface/strip_types 16 (Back to VCA view)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 1 1
+send_osc osc.udp://127.0.0.1:3819 /strip/fader 1 0.8  (Moving VCA 1 works fine)
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 1 0
+send_osc osc.udp://127.0.0.1:3819 /strip/fader/touch 2 1 (Touching VCA 2 crashes Ardour!)
