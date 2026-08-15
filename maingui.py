@@ -7,8 +7,14 @@ from stripTypes import StripEnum
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 
-#import liblo
-import pyliblo3 as liblo
+try:
+    import pyliblo3 as liblo
+except ImportError:
+    try:
+        import liblo
+    except ImportError:
+        raise ImportError("Neither 'pyliblo3' nor 'liblo' could be found. Please install one of them.")
+
 import sys
 import oscserver
 import stripselwidget

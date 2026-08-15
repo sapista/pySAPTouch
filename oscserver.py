@@ -10,9 +10,15 @@ This models ensures a thread-safe gtk signal generation for incoming osc message
 3. In the send terminal: send_osc osc.udp://127.0.0.1:3819 /strip/list
 """
 
+try:
+    import pyliblo3 as liblo
+except ImportError:
+    try:
+        import liblo
+    except ImportError:
+        raise ImportError("Neither 'pyliblo3' nor 'liblo' could be found. Please install one of them.")
+
 import stripselwidget
-#import liblo
-import pyliblo3 as liblo
 import socket
 from gi.repository import GObject
 
