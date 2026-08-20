@@ -22,6 +22,7 @@
         <window_height>800</window_height>
         <window_maximize>False</window_maximize>
         <meter_waveform_speed>10</meter_waveform_speed>
+        <hide_cursor>True</hide_cursor>
     </misc>
     <debug>
         <log_invalid_messages>False</log_invalid_messages>

@@ -164,10 +164,6 @@ class StripTable(Gtk.Grid):
 
     def set_strip_name(self, ssid, name):
         #print("set_strip_name on ssid '%d' with value '%s'" % (ssid, name))
-        if self.current_selected_bank_idx == self.strips_list_widgets[ssid - 1].get_bank():
-            self.emit('bank_channel_type_changed',
-                      self.strips_list_widgets[ssid - 1].get_bank_index(),
-                      self.strips_list_widgets[ssid - 1].get_type())
 
         #Avoid empty names, Ardour return empty strips as " "
         if len(name) == 0 or name == " ":
@@ -181,6 +177,7 @@ class StripTable(Gtk.Grid):
                 self.strips_list_widgets[ssid - 1].set_type(StripEnum.VCA) #Start assuming its a VCA
             if self.current_selected_bank_idx == self.strips_list_widgets[ssid - 1].get_bank():
                 self.emit('bank_channel_ssid_name_changed', self.strips_list_widgets[ssid - 1].get_bank_index(), ssid, name)
+                self.emit('bank_channel_type_changed', self.strips_list_widgets[ssid - 1].get_bank_index(), self.strips_list_widgets[ssid - 1].get_type())
 
             #In VCA mode force to select the whole first bank
             if self.vca_mode and ssid == 1:

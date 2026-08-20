@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import gi
 
@@ -338,9 +338,11 @@ class ControllerGUI(Gtk.Window):
 
     def btn_page_up_clicked(self, widget):
         liblo.send(self.target, "/bank_up")
+        self.safe_strip_select(1) #Ensure always selecting the first ssid in the Ardour bank
 
     def btn_page_down_clicked(self, widget):
         liblo.send(self.target, "/bank_down")
+        self.safe_strip_select(1) #Ensure always selecting the first ssid in the Ardour bank
 
     def btn_VCA_mode_clicked(self, widget):
         if self.bVCAmode is not True:
@@ -363,12 +365,15 @@ class ControllerGUI(Gtk.Window):
             liblo.send(self.target, "/set_surface/strip_types", 7)
 
     def bank_channel_select_changed(self, widget, index, value):
+        #print(f"bank_channel_select_changed index: {index}  value: {value}")
         self.strips_list_selbank[index].set_select(value)
 
     def bank_channel_ssid_name_changed(self, widget, index, ssid, name):
+        #print(f"bank_channel_ssid_name_changed index: {index}  ssid: {ssid}  name: {name}")
         self.strips_list_selbank[index].set_ssid_name(ssid, name)
 
     def bank_channel_type_changed(self, widget, index, type):
+        #print(f"bank_channel_type_changed index: {index}  type: {type}")
         self.strips_list_selbank[index].set_strip_type(type)
         if type is StripEnum.VCA and self.bSpill:
             self.strips_list_selbank[index].btn_spill.hide()
@@ -643,7 +648,11 @@ class ControllerGUI(Gtk.Window):
         self.watchdog.set_OSC_online(True)
         self.watchdog.reset()
         self.LED_OSCconnection.set_value(not self.LED_OSCconnection.get_value())
+        if self.bOnline:
+            return
         self.LED_OSCconnection.set_label("OSC Online")
+        self.set_top_bar_sensitive(True)
+        self.bOnline = True
 
     def on_watchdog_expired(self):
         if self.watchdog.get_OSC_online():
@@ -651,6 +660,8 @@ class ControllerGUI(Gtk.Window):
             self.watchdog.set_OSC_online(False)
             self.LED_OSCconnection.set_value(False)
             self.LED_OSCconnection.set_label("OSC Offline")
+            self.set_top_bar_sensitive(False)
+            self.bOnline = False
 
         #print("Watchdog timed out! Connection lost. Reconnecting...")
         self.refresh_strip_list_ALL(None)
@@ -713,6 +724,24 @@ class ControllerGUI(Gtk.Window):
             self.btn_activate_VCA_mode.set_label("VCA's")
         return self.bSpill
 
+    def hide_cursor(self, widget):
+        gdk_window = self.get_window()
+
+        if gdk_window is not None:
+            display = widget.get_display()
+            cursor_invisible = Gdk.Cursor.new_for_display(display, Gdk.CursorType.BLANK_CURSOR)
+            gdk_window.set_cursor(cursor_invisible)
+
+    def set_top_bar_sensitive(self, bSensitive):
+        self.hbox_top.set_sensitive(bSensitive)
+        self.btn_activate_TrkBus_mode.set_sensitive(bSensitive)
+        self.wheel_frame.set_sensitive(bSensitive)
+        self.btn_playpause.set_sensitive(bSensitive)
+        self.btn_loop.set_sensitive(bSensitive)
+        self.btn_solo_cancel.set_sensitive(bSensitive)
+        self.btn_solo_toggle_exclusive.set_sensitive(bSensitive)
+        self.btn_activate_VCA_mode.set_sensitive(bSensitive)
+
     def __init__(self):
         self.number_of_strips_per_page = 24 #In Ardour pages refers to bank, for me, bank is the mapped faders
         self.bVCAmode = False #Controls if its showing track/bus or VCA's
@@ -740,6 +769,7 @@ class ControllerGUI(Gtk.Window):
         window_height = int(misc.find('window_height').text)
         window_maximize = ast.literal_eval(misc.find('window_maximize').text)
         self.PIXELS_X_SECOND = int(misc.find('meter_waveform_speed').text)
+        hide_cursor = ast.literal_eval(misc.find('hide_cursor').text)
 
         debug = root.find('debug')
         log_invalid_messages = ast.literal_eval(debug.find('log_invalid_messages').text)
@@ -892,7 +922,6 @@ class ControllerGUI(Gtk.Window):
         self.btn_session_save.connect("clicked", self.btn_session_save_clicked)
         self.hbox_top.pack_start(self.btn_session_save, expand=False, fill=False, padding=0)
 
-
         # Refresh button All
         self.btn_refresh_ALL = Gtk.Button()
         self.btn_refresh_ALL.set_image(Gtk.Image.new_from_file("icons/reload_32.png"))
@@ -903,6 +932,7 @@ class ControllerGUI(Gtk.Window):
         self.LED_OSCconnection = LEDWidget.LEDWidget("OSC Offline", "#00FF00")
         self.LED_OSCconnection.set_size_request(100, 10)
         self.hbox_top.pack_end(self.LED_OSCconnection, expand=False, fill=False, padding=0)
+        self.bOnline = False
 
         #Button page (bank in Ardour) up/down
         self.btn_page_up = Gtk.Button()
@@ -938,6 +968,9 @@ class ControllerGUI(Gtk.Window):
         self.btn_activate_TrkBus_mode.set_active_state(True)
         self.btn_activate_TrkBus_mode.connect("clicked", self.btn_TrkBus_mode_clicked)
         self.header_content_box.pack_end(self.btn_activate_TrkBus_mode, expand=False, fill=False, padding=0)
+
+        #Init with no sensitive the top bar
+        self.set_top_bar_sensitive(False)
 
         # Global bool to store loop state
         self.bLooping = False
@@ -1239,6 +1272,9 @@ class ControllerGUI(Gtk.Window):
         self.oscserver.connect("select_send_fader_changed", self.select_send_fader_osc_changed)
         self.oscserver.connect("select_send_gain_changed", self.select_send_gain_osc_changed)
         self.oscserver.connect("osc_heartbeat_tick", self.osc_heartbeat_tick)
+
+        if hide_cursor:
+            self.connect("realize", self.hide_cursor)
 
         self.show_all()
         self.show()
