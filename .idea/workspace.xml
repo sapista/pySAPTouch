@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="fix import to handle pyliblo3 and old liblo">
+    <list default="true" id="cee0f187-bada-4b85-af4b-7897b8c73e64" name="Default" comment="added helpers and bug fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example_config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/example_config.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/launcher.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/maingui.py" beforeDir="false" afterPath="$PROJECT_DIR$/maingui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stripTable.py" beforeDir="false" afterPath="$PROJECT_DIR$/stripTable.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -261,14 +257,6 @@
       <option name="presentableId" value="LOCAL-00013" />
       <option name="project" value="LOCAL" />
       <updated>1597075612246</updated>
-    </task>
-    <task id="LOCAL-00022" summary="Encoder fully working">
-      <option name="closed" value="true" />
-      <created>1785398008761</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1785398008761</updated>
     </task>
     <task id="LOCAL-00023" summary="- Bug fixing&#10;- Added watchdog for autoconnection&#10;- First Release Candidate">
       <option name="closed" value="true" />
@@ -550,7 +538,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786782671814</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="added helpers and bug fix">
+      <option name="closed" value="true" />
+      <created>1787227290762</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1787227290763</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -566,7 +562,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="changed import liblo to import pyliblo3 as liblo" />
     <MESSAGE value="minor fix" />
     <MESSAGE value="-send table width fix&#10;-added a launcher" />
     <MESSAGE value="change ardour feedback value" />
@@ -591,7 +586,8 @@
     <MESSAGE value="RC candidate new com model" />
     <MESSAGE value="minor fix and Ardour VCA touch crash workaround" />
     <MESSAGE value="fix import to handle pyliblo3 and old liblo" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix import to handle pyliblo3 and old liblo" />
+    <MESSAGE value="added helpers and bug fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="added helpers and bug fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
